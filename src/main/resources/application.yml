@@ -1,0 +1,4 @@
+spring.datasource.url : jdbc:mysql://localhost:3306/my_db?serverTimezone=UTC
+spring.datasource.username : root
+spring.datasource.password : 21213Pav333+
+spring.jpa.hibernate.ddl-auto : none
