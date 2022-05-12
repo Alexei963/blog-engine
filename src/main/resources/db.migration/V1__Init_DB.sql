@@ -1,26 +1,26 @@
 create table users
 (
     id           integer      not null auto_increment,
-    is_moderator integer      not null,
+    is_moderator TINYINT      not null,
     reg_time     datetime(6) not null,
     name         varchar(255) not null,
     email        varchar(255) not null,
     password     varchar(255) not null,
     code         varchar(255),
-    photo        varchar(255),
+    photo        TEXT,
     primary key (id)
 );
 
 create table posts
 (
     id                integer      not null auto_increment,
-    is_active         integer      not null,
-    moderation_status varchar(255) not null,
+    is_active         TINYINT      not null,
+    moderation_status enum('NEW', 'ACCEPTED', 'DECLINED') default 'NEW' not null,
     moderator_id      integer,
     user_id           integer      not null,
     time              datetime(6) not null,
     title             varchar(255) not null,
-    text              varchar(255) not null,
+    text              TEXT         not null,
     view_count        integer      not null,
     primary key (id)
 );
@@ -31,13 +31,13 @@ create table post_votes
     user_id integer not null,
     post_id integer not null,
     time    datetime(6) not null,
-    value   integer not null,
+    value   TINYINT not null,
     primary key (id)
 );
 
 create table tags
 (
-    id   integer      not null auto_increment,
+    id   integer not null auto_increment,
     name varchar(255) not null,
     primary key (id)
 );
@@ -51,21 +51,21 @@ create table tag2post
 
 create table post_comments
 (
-    id        integer      not null auto_increment,
+    id        integer not null auto_increment,
     parent_id integer,
-    post_id   integer      not null,
-    user_id   integer      not null,
+    post_id   integer not null,
+    user_id   integer not null,
     time      datetime(6) not null,
-    text      varchar(255) not null,
+    text      TEXT    not null,
     primary key (id)
 );
 
 create table captcha_codes
 (
-    id          integer      not null auto_increment,
+    id          integer  not null auto_increment,
     time        datetime(6) not null,
-    code        varchar(255) not null,
-    secret_code varchar(255) not null,
+    code        TINYTEXT not null,
+    secret_code TINYTEXT not null,
     primary key (id)
 );
 
