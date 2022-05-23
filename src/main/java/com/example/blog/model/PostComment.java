@@ -37,6 +37,5 @@ public class PostComment {
   @JoinColumn(name = "user_id")
   private User user;
   private Date time;
-  @Column(columnDefinition = "TEXT", nullable = false)
   private String text;
 }
