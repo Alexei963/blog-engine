@@ -28,15 +28,14 @@ public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
-  @Column(name = "is_moderator", columnDefinition = "TINYINT", nullable = false)
+  @Column(name = "is_moderator")
   private int isModerator;
-  @Column(name = "reg_time", nullable = false)
+  @Column(name = "reg_time")
   private Date regTime;
   private String name;
   private String email;
   private String password;
   private String code;
-  @Column(columnDefinition = "TEXT")
   private String photo;
   @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
   private List<Post> posts;

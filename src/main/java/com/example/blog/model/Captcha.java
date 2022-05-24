@@ -11,10 +11,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * Entity "Captcha" from table captcha_codes.
- */
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,8 +22,7 @@ public class Captcha {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
   private Date time;
-  @Column(columnDefinition = "TINYTEXT", nullable = false)
   private String code;
-  @Column(name = "secret_code", columnDefinition = "TINYTEXT", nullable = false)
+  @Column(name = "secret_code")
   private String secretCode;
 }

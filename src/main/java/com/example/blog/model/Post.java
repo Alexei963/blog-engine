@@ -36,12 +36,10 @@ public class Post {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
-  @Column(name = "is_active", columnDefinition = "TINYINT", nullable = false)
+  @Column(name = "is_active")
   private int isActive;
   @Enumerated(EnumType.STRING)
-  @Column(name = "moderation_status",
-      columnDefinition = "enum('NEW', 'ACCEPTED', 'DECLINED') default 'NEW'",
-      nullable = false)
+  @Column(name = "moderation_status")
   private ModerationStatus moderationStatus;
   @Column(name = "moderator_id")
   private int moderatorId;
@@ -50,9 +48,8 @@ public class Post {
   private User user;
   private Date time;
   private String title;
-  @Column(columnDefinition = "TEXT", nullable = false)
   private String text;
-  @Column(name = "view_count", nullable = false)
+  @Column(name = "view_count")
   private int viewCount;
   @OneToMany(cascade = CascadeType.ALL, mappedBy = "post")
   private List<PostVote> votes;
