@@ -2,6 +2,7 @@ package com.example.blog.model;
 
 import java.util.Date;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -34,5 +35,6 @@ public class PostVote {
   @JoinColumn(name = "post_id")
   private Post post;
   private Date time;
+  @Column(columnDefinition = "TINYINT", nullable = false)
   private int value;
 }
