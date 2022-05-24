@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,7 +30,7 @@ public class PostService {
     PostResponse postResponse = new PostResponse();
     Pageable pageable = PageRequest.of(offset, limit);
     Page<Post> page;
-        switch (mode) {
+    switch (mode) {
       case "popular":
         page = postRepository.findPopularPosts(pageable);
         break;
@@ -62,7 +63,7 @@ public class PostService {
       }
       responseMap = new LinkedHashMap<>();
       responseMap.put("id", post.getId());
-      responseMap.put("timestamp",  post.getTime().getTime() / 1000);
+      responseMap.put("timestamp", post.getTime().getTime() / 1000);
       Map<String, Object> usersMap = new LinkedHashMap<>();
       usersMap.put("id", post.getUser().getId());
       usersMap.put("name", post.getUser().getName());
