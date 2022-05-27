@@ -1,7 +1,6 @@
 package com.example.blog.service;
 
 import com.example.blog.api.response.SettingsResponse;
-import com.example.blog.model.GlobalSettings;
 import com.example.blog.repository.GlobalSettingsRepository;
 import org.springframework.stereotype.Service;
 
@@ -18,24 +17,14 @@ public class SettingsService {
     this.settingsRepository = settingsRepository;
   }
 
-
   public SettingsResponse getGlobalSettings() {
     SettingsResponse settingsResponse = new SettingsResponse();
-    GlobalSettings multiuserMode =
-        settingsRepository.findGlobalSettingsByCode("MULTIUSER_MODE");
-    GlobalSettings postPreModeration =
-        settingsRepository.findGlobalSettingsByCode("POST_PREMODERATION");
-    GlobalSettings statisticsIsPublic =
-        settingsRepository.findGlobalSettingsByCode("STATISTICS_IS_PUBLIC");
-    if (multiuserMode.getValue().equals("YES")) {
-      settingsResponse.setMultiUserMode(true);
-    }
-    if (postPreModeration.getValue().equals("YES")) {
-      settingsResponse.setPostPreModeration(true);
-    }
-    if (statisticsIsPublic.getValue().equals("YES")) {
-      settingsResponse.setStatisticsIsPublic(true);
-    }
+    settingsResponse.setMultiUserMode(settingsRepository
+        .findGlobalSettingsByCode("MULTIUSER_MODE").getValue().equals("YES"));
+    settingsResponse.setPostPreModeration(settingsRepository
+        .findGlobalSettingsByCode("POST_PREMODERATION").getValue().equals("YES"));
+    settingsResponse.setStatisticsIsPublic(settingsRepository
+        .findGlobalSettingsByCode("STATISTICS_IS_PUBLIC").getValue().equals("YES"));
     return settingsResponse;
   }
 }

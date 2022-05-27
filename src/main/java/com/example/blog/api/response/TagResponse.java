@@ -1,8 +1,8 @@
 package com.example.blog.api.response;
 
-import com.example.blog.model.Tag;
+import com.example.blog.dto.TagDto;
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,5 +14,5 @@ import lombok.Setter;
 @Setter
 public class TagResponse {
 
-  private ArrayList<Map<String, Object>> tags = new ArrayList<>();
+  private List<TagDto> tags = new ArrayList<>();
 }

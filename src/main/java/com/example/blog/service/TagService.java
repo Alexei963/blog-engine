@@ -1,12 +1,13 @@
 package com.example.blog.service;
 
 import com.example.blog.api.response.TagResponse;
+import com.example.blog.dto.TagDto;
 import com.example.blog.model.Tag;
 import com.example.blog.repository.TagRepository;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,38 +18,31 @@ import org.springframework.stereotype.Service;
 public class TagService {
 
   private final TagRepository tagRepository;
+  private final MapperService mapperService;
 
-  public TagService(TagRepository tagRepository) {
+  public TagService(TagRepository tagRepository,
+      MapperService mapperService) {
     this.tagRepository = tagRepository;
+    this.mapperService = mapperService;
   }
 
   public TagResponse getTagResponse(String query) {
     TagResponse tagResponse = new TagResponse();
-    List<Tag> tags = tagRepository.findAll();
-    ArrayList<Map<String, Object>> tagsList = new ArrayList<>();
+    ArrayList<Tag> tags = new ArrayList<>(tagRepository.findAll());
     if (query == null) {
-      for (Tag tag : tags) {
-        tagsList.addAll(mappingInResponse(tag));
-      }
-      tagResponse.setTags(tagsList);
+      List<TagDto> tagDtoList = tags.stream()
+            .map(mapperService::convertTagToDto)
+            .collect(Collectors.toList());
+      tagResponse.setTags(tagDtoList);
       return tagResponse;
     } else {
       Tag tag = tagRepository.findByName(query);
-      tagResponse.setTags(mappingInResponse(tag));
+      tagResponse.setTags(Collections.singletonList(mapperService.convertTagToDto(tag)));
     }
     return tagResponse;
   }
 
-  private ArrayList<Map<String, Object>> mappingInResponse(Tag tag) {
-    Map<String, Object> responseMap = new LinkedHashMap<>();
-    ArrayList<Map<String, Object>> tagsList = new ArrayList<>();
-    responseMap.put("name", tag.getName());
-    responseMap.put("weight", getTagWeight(tag));
-    tagsList.add(responseMap);
-    return tagsList;
-  }
-
-  private double getTagWeight(Tag tag) {
+  public double getTagWeight(Tag tag) {
     int totalAllPosts = tagRepository.findAll()// Общее количество постов.
         .stream()
         .mapToInt(t -> t.getPosts().size())
@@ -57,7 +51,7 @@ public class TagService {
         .stream()
         .mapToDouble(tad -> (double) tad.getPosts().size() / totalAllPosts)
         .max()
-        .getAsDouble();
+        .orElseThrow(IllegalStateException::new);
     double coefficient = 1 / maxWeight; // Коэффициент для нормализации.
     int numberOfPostsByTag = tag.getPosts().size(); // Количество постов по тегу.
     double value = (double) numberOfPostsByTag / totalAllPosts; // Считаю ненормированный вес.
