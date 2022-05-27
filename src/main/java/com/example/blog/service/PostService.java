@@ -1,12 +1,11 @@
 package com.example.blog.service;
 
 import com.example.blog.api.response.PostResponse;
+import com.example.blog.dto.PostDto;
 import com.example.blog.model.Post;
 import com.example.blog.repository.PostRepository;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,14 +20,17 @@ import org.springframework.stereotype.Service;
 public class PostService {
 
   private final PostRepository postRepository;
+  private final MapperService mapperService;
 
-  public PostService(PostRepository postRepository) {
+  public PostService(PostRepository postRepository,
+      MapperService mapperService) {
     this.postRepository = postRepository;
+    this.mapperService = mapperService;
   }
 
   public PostResponse getPostResponse(int offset, int limit, String mode) {
     PostResponse postResponse = new PostResponse();
-    Pageable pageable = PageRequest.of(offset, limit);
+    Pageable pageable = PageRequest.of(offset / limit, limit);
     Page<Post> page;
     switch (mode) {
       case "popular":
@@ -43,39 +45,15 @@ public class PostService {
       default:
         page = postRepository.findRecentPosts(pageable);
     }
-    ArrayList<Map<String, Object>> posts
-        = (ArrayList<Map<String, Object>>) mappingInResponse(page);
+    ArrayList<Post> posts = new ArrayList<>(page.getContent());
+    List<PostDto> postDtoList = posts.stream()
+        .map(mapperService::convertPostToDto)
+        .collect(Collectors.toList());
     if (posts.isEmpty()) {
       return postResponse;
     }
-    postResponse.setCount(posts.size());
-    postResponse.setPosts(posts);
+    postResponse.setCount((int) postRepository.count());
+    postResponse.setPosts(postDtoList);
     return postResponse;
-  }
-
-  private List<Map<String, Object>> mappingInResponse(Page<Post> page) {
-    ArrayList<Map<String, Object>> posts = new ArrayList<>();
-    Map<String, Object> responseMap;
-    for (Post post : page) {
-      String announce = post.getText();
-      if (announce.length() > 150) {
-        announce = announce.substring(0, 150).concat("...");
-      }
-      responseMap = new LinkedHashMap<>();
-      responseMap.put("id", post.getId());
-      responseMap.put("timestamp", post.getTime().getTime() / 1000);
-      Map<String, Object> usersMap = new LinkedHashMap<>();
-      usersMap.put("id", post.getUser().getId());
-      usersMap.put("name", post.getUser().getName());
-      responseMap.put("user", usersMap);
-      responseMap.put("title", post.getTitle());
-      responseMap.put("announce", announce);
-      responseMap.put("likeCount", post.getVotes().size());
-      responseMap.put("dislikeCount", post.getVotes().size());
-      responseMap.put("commentCount", post.getComments().size());
-      responseMap.put("viewCount", post.getViewCount());
-      posts.add(responseMap);
-    }
-    return posts;
   }
 }

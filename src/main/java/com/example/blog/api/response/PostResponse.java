@@ -1,7 +1,8 @@
 package com.example.blog.api.response;
 
+import com.example.blog.dto.PostDto;
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,5 +15,5 @@ import lombok.Setter;
 public class PostResponse {
 
   private int count;
-  private ArrayList<Map<String, Object>> posts = new ArrayList<>();
+  private List<PostDto> posts = new ArrayList<>();
 }
