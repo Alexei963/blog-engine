@@ -56,4 +56,40 @@ public class PostService {
     postResponse.setPosts(postDtoList);
     return postResponse;
   }
+
+  private void getPostResponse(Page<Post> page, PostResponse postResponse) {
+    ArrayList<Post> posts = new ArrayList<>(page.getContent());
+    List<PostDto> postDtoList = posts.stream()
+        .map(mapperService::convertPostToDto)
+        .collect(Collectors.toList());
+    if (posts.isEmpty()) {
+      return;
+    }
+    postResponse.setCount(posts.size());
+    postResponse.setPosts(postDtoList);
+  }
+
+  public PostResponse searchPosts(int offset, int limit, String query) {
+    PostResponse postResponse = new PostResponse();
+    Pageable pageable = PageRequest.of(offset / limit, limit);
+    Page<Post> page = postRepository.postsSearch(query, pageable);
+    getPostResponse(page, postResponse);
+    return postResponse;
+  }
+
+  public PostResponse getPostsByDate(int offset, int limit, String date) {
+    PostResponse postResponse = new PostResponse();
+    Pageable pageable = PageRequest.of(offset / limit, limit);
+    Page<Post> page = postRepository.findPostsByDate(date, pageable);
+    getPostResponse(page, postResponse);
+    return postResponse;
+  }
+
+  public PostResponse getPostsByTag(int offset, int limit, String tag) {
+    PostResponse postResponse = new PostResponse();
+    Pageable pageable = PageRequest.of(offset / limit, limit);
+    Page<Post> page = postRepository.findPostsByTags(tag, pageable);
+    getPostResponse(page, postResponse);
+    return postResponse;
+  }
 }

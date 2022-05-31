@@ -1,8 +1,10 @@
 package com.example.blog.controller;
 
+import com.example.blog.api.response.CalendarResponse;
 import com.example.blog.api.response.InitResponse;
 import com.example.blog.api.response.SettingsResponse;
 import com.example.blog.api.response.TagResponse;
+import com.example.blog.service.CalendarService;
 import com.example.blog.service.SettingsService;
 import com.example.blog.service.TagService;
 import org.springframework.http.HttpStatus;
@@ -23,12 +25,15 @@ public class ApiGeneralController {
   private final InitResponse initResponse;
   private final SettingsService settingsService;
   private final TagService tagService;
+  private final CalendarService calendarService;
 
   public ApiGeneralController(InitResponse initResponse,
-                              SettingsService settingsService, TagService tagService) {
+      SettingsService settingsService, TagService tagService,
+      CalendarService calendarService) {
     this.initResponse = initResponse;
     this.settingsService = settingsService;
     this.tagService = tagService;
+    this.calendarService = calendarService;
   }
 
   @GetMapping("/init")
@@ -44,5 +49,10 @@ public class ApiGeneralController {
   @GetMapping("/tag")
   private ResponseEntity<TagResponse> getTag(@RequestParam(required = false) String query) {
     return new ResponseEntity<>(tagService.getTagResponse(query), HttpStatus.OK);
+  }
+
+  @GetMapping("/calendar")
+  private ResponseEntity<CalendarResponse> getCalendar(@RequestParam(required = false) String year) {
+    return new ResponseEntity<>(calendarService.getCalendar(year), HttpStatus.OK);
   }
 }

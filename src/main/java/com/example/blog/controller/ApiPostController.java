@@ -30,4 +30,28 @@ public class ApiPostController {
       @RequestParam(defaultValue = "recent") String mode) {
     return new ResponseEntity<>(postService.getPostResponse(offset, limit, mode), HttpStatus.OK);
   }
+
+  @GetMapping("/search")
+  private ResponseEntity<PostResponse> searchPosts(
+      @RequestParam(defaultValue = "0") int offset,
+      @RequestParam(defaultValue = "10") int limit,
+      @RequestParam(required = false) String query) {
+    return new ResponseEntity<>(postService.searchPosts(offset, limit, query), HttpStatus.OK);
+  }
+
+  @GetMapping("/byDate")
+  private ResponseEntity<PostResponse> getPostsByDate(
+      @RequestParam(defaultValue = "0") int offset,
+      @RequestParam(defaultValue = "10") int limit,
+      @RequestParam(required = false) String date) {
+    return new ResponseEntity<>(postService.getPostsByDate(offset, limit, date), HttpStatus.OK);
+  }
+
+  @GetMapping("/byTag")
+  private ResponseEntity<PostResponse> getPostsByTag(
+      @RequestParam(defaultValue = "0") int offset,
+      @RequestParam(defaultValue = "10") int limit,
+      @RequestParam(required = false) String tag) {
+    return new ResponseEntity<>(postService.getPostsByTag(offset, limit, tag), HttpStatus.OK);
+  }
 }
