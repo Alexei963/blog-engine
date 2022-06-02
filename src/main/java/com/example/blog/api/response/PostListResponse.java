@@ -12,7 +12,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PostResponse {
+public class PostListResponse {
 
   private int count;
   private List<PostDto> posts = new ArrayList<>();
