@@ -12,5 +12,5 @@ public class CommentDto {
   private long time;
   private String text;
   @JsonProperty("user")
-  private UserDtoWithPhoto userDtoWithPhoto;
+  private UserDto userDto;
 }

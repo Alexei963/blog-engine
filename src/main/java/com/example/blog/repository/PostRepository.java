@@ -23,14 +23,14 @@ public interface PostRepository extends CrudRepository<Post, Integer> {
       + "from posts p "
       + "where p.id = :id "
       + "and p.is_active = 1 and p.moderation_status = 'ACCEPTED' "
-      + "and date(time) <= now()", nativeQuery = true)
+      + "and p.time <= now()", nativeQuery = true)
   Optional<Post> findById(@Param("id") int id);
 
   @Query(value = "select * "
       + "from posts p "
-      + "where p.text like %:query% "
+      + "where p.title like %:query% "
       + "and p.is_active = 1 and p.moderation_status = 'ACCEPTED' "
-      + "and date(time) <= now()", nativeQuery = true)
+      + "and p.time <= now()", nativeQuery = true)
   Page<Post> postsSearch(@Param("query") String query, Pageable pageable);
   
   @Query(value = "select * "
@@ -52,30 +52,26 @@ public interface PostRepository extends CrudRepository<Post, Integer> {
   @Query(value = "select * from posts order by time desc", nativeQuery = true)
   Page<Post> findRecentPosts(Pageable pageable);
 
+  @Query(value = "select distinct year(time) "
+      + "year from posts "
+      + "order by year asc", nativeQuery = true)
+  List<Integer> findYearsPosts();
+
   @Query(value = "select * "
       + "from posts p "
-      + "where p.time like %:date% "
+      + "where date_format(p.time, '%Y-%m-%d') = :date "
       + "and p.is_active = 1 and p.moderation_status = 'ACCEPTED' "
-      + "and date(time) <= now() "
+      + "and p.time <= now() "
       + "order by time desc", nativeQuery = true)
   Page<Post> findPostsByDate(@Param("date") String date, Pageable pageable);
 
   @Query(value = "select * "
       + "from posts p "
-      + "where p.time like %:date% "
+      + "where year(p.time) = :date "
       + "and p.is_active = 1 and p.moderation_status = 'ACCEPTED' "
-      + "and date(time) <= now() "
-      + "group by cast(time as Date) "
+      + "and p.time <= now() "
       + "order by time desc", nativeQuery = true)
   List<Post> findPostsByDate(@Param("date") String date);
-
-  @Query(value = "select count(*) "
-      + "from posts p "
-      + "where p.time like %:date% "
-      + "and p.is_active = 1 and p.moderation_status = 'ACCEPTED' "
-      + "and date(time) <= now() "
-      + "order by p.time desc", nativeQuery = true)
-  int countPostsByTime(@Param("date") String date);
 
   @Query(value = "select * "
       + "from posts p "
