@@ -1,7 +1,7 @@
 package com.example.blog.service;
 
 import com.example.blog.api.response.PostListResponse;
-import com.example.blog.dto.OnePostDto;
+import com.example.blog.api.response.PostResponse;
 import com.example.blog.dto.PostDto;
 import com.example.blog.model.Post;
 import com.example.blog.repository.PostRepository;
@@ -81,12 +81,10 @@ public class PostService {
     return getResponse(page);
   }
 
-  public OnePostDto getPost(int id) {
-    OnePostDto onePostDto = null;
+  public PostResponse getPost(int id) {
+    PostResponse postResponse = new PostResponse();
     Optional<Post> post = postRepository.findById(id);
-    if (post.isPresent()) {
-      onePostDto = mapperService.convertOnePostToDto(post.get());
-    }
-    return onePostDto;
+    post.ifPresent(value -> postResponse.setPostDto(mapperService.convertOnePostToDto(value)));
+    return postResponse;
   }
 }
