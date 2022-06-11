@@ -9,9 +9,7 @@ import com.example.blog.model.PostComment;
 import com.example.blog.model.Tag;
 import com.example.blog.model.User;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -34,6 +32,8 @@ public class MapperService {
   public PostDto convertPostToDto(Post post) {
     PostDto postDto = mapper.map(post, PostDto.class);
     postDto.setTime(post.getTime().getTime() / 1000);
+    boolean active = post.getIsActive() == 1;
+    postDto.setActive(active);
     postDto.setUserDto(convertUserToDto(post.getUser()));
     String announce = post.getText();
     if (announce.length() > 150) {
@@ -43,24 +43,13 @@ public class MapperService {
     postDto.setLikeCount(post.getVotes().size());
     postDto.setDislikeCount(post.getVotes().size());
     postDto.setCommentCount(post.getComments().size());
-    return postDto;
-  }
-
-  public PostDto convertOnePostToDto(Post post) {
-    PostDto postDto = mapper.map(post, PostDto.class);
-    postDto.setTime(post.getTime().getTime() / 1000);
-    boolean active = post.getIsActive() == 1;
-    postDto.setActive(active);
-    postDto.setUserDto(convertUserToDto(post.getUser()));
-    postDto.setLikeCount(post.getVotes().size());
-    postDto.setDislikeCount(post.getVotes().size());
     List<CommentDto> commentDtoList = new ArrayList<>();
     List<PostComment> postCommentList = post.getComments();
     postCommentList.forEach(postComment -> commentDtoList.add(convertCommentToDto(postComment)));
     postDto.setCommentsDto(commentDtoList);
-    Set<String> stringSet = new HashSet<>();
-    post.getTags().forEach(tag -> stringSet.add(tag.getName()));
-    postDto.setTagsDto(stringSet);
+    List<String> tagsList = new ArrayList<>();
+    post.getTags().forEach(tag -> tagsList.add(tag.getName()));
+    postDto.setTagsDto(tagsList);
     return postDto;
   }
 

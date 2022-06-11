@@ -1,21 +1,27 @@
 package com.example.blog.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.HashSet;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
-import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ *  Post Dto.
+ */
+
 @Getter
 @Setter
+@JsonPropertyOrder({"id", "timestamp", "active", "user", "title", "announce", "text",
+    "likeCount", "dislikeCount", "commentCount", "viewCount", "comments", "tags"})
 public class PostDto {
-
   private int id;
   @JsonProperty("timestamp")
   private long time;
   private boolean active;
   @JsonProperty("user")
+  @JsonIgnoreProperties({"email", "photo", "moderation", "moderationCount", "settings"})
   private UserDto userDto;
   private String title;
   private String announce;
@@ -27,5 +33,5 @@ public class PostDto {
   @JsonProperty("comments")
   private List<CommentDto> commentsDto;
   @JsonProperty("tags")
-  private Set<String> tagsDto = new HashSet<>();
+  private List<String> tagsDto;
 }

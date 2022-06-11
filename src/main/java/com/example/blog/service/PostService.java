@@ -1,7 +1,7 @@
 package com.example.blog.service;
 
+import com.example.blog.api.response.PostByIdResponse;
 import com.example.blog.api.response.PostListResponse;
-import com.example.blog.api.response.PostResponse;
 import com.example.blog.dto.PostDto;
 import com.example.blog.model.Post;
 import com.example.blog.repository.PostRepository;
@@ -81,10 +81,23 @@ public class PostService {
     return getResponse(page);
   }
 
-  public PostResponse getPost(int id) {
-    PostResponse postResponse = new PostResponse();
+  public PostByIdResponse getPost(int id) {
+    PostByIdResponse postResponse = new PostByIdResponse();
     Optional<Post> post = postRepository.findById(id);
-    post.ifPresent(value -> postResponse.setPostDto(mapperService.convertOnePostToDto(value)));
+    post.ifPresent(value -> {
+      PostDto postDto = mapperService.convertPostToDto(value);
+      postResponse.setId(postDto.getId());
+      postResponse.setTimestamp(postDto.getTime());
+      postResponse.setActive(postDto.isActive());
+      postResponse.setUserDto(postDto.getUserDto());
+      postResponse.setTitle(postDto.getTitle());
+      postResponse.setText(postDto.getText());
+      postResponse.setLikeCount(postDto.getLikeCount());
+      postResponse.setDislikeCount(postDto.getDislikeCount());
+      postResponse.setViewCount(postDto.getViewCount());
+      postResponse.setComments(postDto.getCommentsDto());
+      postResponse.setTags(postDto.getTagsDto());
+    });
     return postResponse;
   }
 }
