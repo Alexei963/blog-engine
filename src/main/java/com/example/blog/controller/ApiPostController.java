@@ -1,7 +1,7 @@
 package com.example.blog.controller;
 
-import com.example.blog.api.response.PostListResponse;
 import com.example.blog.api.response.PostByIdResponse;
+import com.example.blog.api.response.PostListResponse;
 import com.example.blog.service.PostService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
