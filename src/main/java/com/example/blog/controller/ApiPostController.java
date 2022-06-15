@@ -1,7 +1,7 @@
 package com.example.blog.controller;
 
+import com.example.blog.api.response.PostByIdResponse;
 import com.example.blog.api.response.PostListResponse;
-import com.example.blog.api.response.PostResponse;
 import com.example.blog.service.PostService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,7 +58,7 @@ public class ApiPostController {
   }
 
   @GetMapping("/{id}")
-  private ResponseEntity<PostResponse> getPost(@PathVariable int id) {
+  private ResponseEntity<PostByIdResponse> getPost(@PathVariable int id) {
     if (!(postService.getPost(id) == null)) {
       return new ResponseEntity<>(postService.getPost(id), HttpStatus.OK);
     } else {

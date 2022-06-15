@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Post Response.
+ *  Post list response.
  */
 
 @Getter
