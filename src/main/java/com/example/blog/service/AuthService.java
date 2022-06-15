@@ -14,7 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.imageio.ImageIO;
@@ -68,7 +68,7 @@ public class AuthService {
     RegisterResponse registerResponse = new RegisterResponse();
     Optional<Captcha> captcha = captchaRepository.findByCode(registerRequest.getCaptcha());
     boolean userEmail = userRepository.findByEmail(registerRequest.getEmail()).isPresent();
-    Map<String, String> errorsMap = new HashMap<>();
+    Map<String, String> errorsMap = new LinkedHashMap<>();
     if (captcha.isPresent() && !userEmail
         && captcha.get().getCode().equals(registerRequest.getCaptcha())) {
       User user = new User();
@@ -79,14 +79,14 @@ public class AuthService {
       userRepository.save(user);
       registerResponse.setResult(true);
     }
-    if (captcha.isPresent() && !captcha.get().getCode().equals(registerRequest.getCaptcha())) {
-      errorsMap.put("captcha", "Код с картинки введён неверно");
-    }
     if (userEmail) {
       errorsMap.put("email", "Этот e-mail уже зарегистрирован");
     }
     if (registerRequest.getPassword().length() < 6) {
       errorsMap.put("password", "Пароль короче 6-ти символов");
+    }
+    if (captcha.isEmpty()) {
+      errorsMap.put("captcha", "Код с картинки введён неверно");
     }
     registerResponse.setErrors(errorsMap);
     return registerResponse;
