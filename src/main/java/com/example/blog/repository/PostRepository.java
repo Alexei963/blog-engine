@@ -81,4 +81,37 @@ public interface PostRepository extends CrudRepository<Post, Integer> {
       + "and p.is_active = 1 and p.moderation_status = 'ACCEPTED' "
       + "and date(time) <= now()", nativeQuery = true)
   Page<Post> findPostsByTags(String tag, Pageable pageable);
+
+  @Query(value = "select count(p.id) "
+      + "from posts p "
+      + "where p.moderation_status = 'NEW' ", nativeQuery = true)
+  int countByModerationStatus();
+
+  @Query(value = "select * "
+      + "from posts p "
+      + "join users u on p.user_id = u.id "
+      + "where u.email = :email "
+      + "and p.is_active = 0", nativeQuery = true)
+  Page<Post> findMyInactivePosts(@Param("email") String email, Pageable pageable);
+
+  @Query(value = "select * "
+      + "from posts p "
+      + "join users u on p.user_id = u.id "
+      + "where u.email = :email "
+      + "and p.is_active = 1 and p.moderation_status = 'NEW'", nativeQuery = true)
+  Page<Post> findMyPendingPosts(@Param("email") String email, Pageable pageable);
+
+  @Query(value = "select * "
+      + "from posts p "
+      + "join users u on p.user_id = u.id "
+      + "where u.email = :email "
+      + "and p.is_active = 1 and p.moderation_status = 'DECLINED'", nativeQuery = true)
+  Page<Post> findMyDeclinedPosts(@Param("email") String email, Pageable pageable);
+
+  @Query(value = "select * "
+      + "from posts p "
+      + "join users u on p.user_id = u.id "
+      + "where u.email = :email "
+      + "and p.is_active = 1 and p.moderation_status = 'ACCEPTED'", nativeQuery = true)
+  Page<Post> findMyPublishedPosts(@Param("email") String email, Pageable pageable);
 }

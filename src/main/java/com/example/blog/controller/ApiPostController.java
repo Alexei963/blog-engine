@@ -3,6 +3,7 @@ package com.example.blog.controller;
 import com.example.blog.api.response.PostByIdResponse;
 import com.example.blog.api.response.PostListResponse;
 import com.example.blog.service.PostService;
+import java.security.Principal;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -64,5 +65,16 @@ public class ApiPostController {
     } else {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+  }
+
+  @GetMapping("/my")
+  private ResponseEntity<PostListResponse> getMyPosts(
+      Principal principal,
+      @RequestParam(defaultValue = "0") int offset,
+      @RequestParam(defaultValue = "10") int limit,
+      @RequestParam(required = false) String status
+  ) {
+    return new ResponseEntity<>(postService.getMyPosts(
+        principal.getName(), offset, limit, status), HttpStatus.OK);
   }
 }

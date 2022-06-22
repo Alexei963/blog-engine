@@ -2,8 +2,9 @@ package com.example.blog.service;
 
 import com.example.blog.api.request.RegisterRequest;
 import com.example.blog.api.response.CaptchaResponse;
-import com.example.blog.api.response.CheckResponse;
+import com.example.blog.api.response.LoginResponse;
 import com.example.blog.api.response.RegisterResponse;
+import com.example.blog.dto.UserDto;
 import com.example.blog.model.Captcha;
 import com.example.blog.model.User;
 import com.example.blog.repository.CaptchaRepository;
@@ -16,41 +17,49 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
+import java.util.UUID;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 /**
- * Check Service.
+ * Auth Service.
  */
 
 @Service
+@EnableScheduling
 public class AuthService {
 
   private final CaptchaRepository captchaRepository;
   private final UserRepository userRepository;
+  private final MapperService mapperService;
+  private final AuthenticationManager authenticationManager;
+  public static final int CAPTCHA_CLEAR_TIME = 3_600_000;
 
   public AuthService(CaptchaRepository captchaRepository,
-      UserRepository userRepository) {
+      UserRepository userRepository, MapperService mapperService,
+      AuthenticationManager authenticationManager) {
     this.captchaRepository = captchaRepository;
     this.userRepository = userRepository;
-  }
-
-
-  public CheckResponse getCheckResponse() {
-    CheckResponse checkResponse = new CheckResponse();
-    checkResponse.setResult(false);
-    return checkResponse;
+    this.mapperService = mapperService;
+    this.authenticationManager = authenticationManager;
   }
 
   public CaptchaResponse getCaptchaResponse() throws IOException {
     GCage captchaGenerator = new GCage();
     String token = captchaGenerator.getTokenGenerator().next();
+    String secret = UUID.randomUUID().toString();
     Captcha captcha = new Captcha();
     captcha.setTime(new Date());
     captcha.setCode(token);
-    captcha.setSecretCode(token);
+    captcha.setSecretCode(secret);
     captchaRepository.save(captcha);
     BufferedImage bufferedImage = captchaGenerator.drawImage(token);
     File image = new File("image.jpeg");
@@ -59,18 +68,22 @@ public class AuthService {
     String encodedString = Base64.getEncoder().encodeToString(fileContent);
     String header = "data:image/png;base64, ";
     CaptchaResponse captchaResponse = new CaptchaResponse();
-    captchaResponse.setSecret(token);
+    captchaResponse.setSecret(secret);
     captchaResponse.setImage(header.concat(encodedString));
     return captchaResponse;
   }
 
   public RegisterResponse getRegisterResponse(RegisterRequest registerRequest) {
     RegisterResponse registerResponse = new RegisterResponse();
-    Optional<Captcha> captcha = captchaRepository.findByCode(registerRequest.getCaptcha());
+    Captcha captcha = captchaRepository.findBySecretCode(registerRequest.getCaptchaSecret());
     boolean userEmail = userRepository.findByEmail(registerRequest.getEmail()).isPresent();
+    String regexName = "[А-Яа-яA-Za-z]+([А-Яа-яA-Za-z\\s]+)?";
+    boolean compareCaptcha = captcha.getCode().equals(registerRequest.getCaptcha());
+    int passwordLength = registerRequest.getPassword().length();
     Map<String, String> errorsMap = new LinkedHashMap<>();
-    if (captcha.isPresent() && !userEmail
-        && captcha.get().getCode().equals(registerRequest.getCaptcha())) {
+    if (!userEmail && compareCaptcha
+        && registerRequest.getName().matches(regexName)
+        && passwordLength >= 6) {
       User user = new User();
       user.setRegTime(new Date());
       user.setName(registerRequest.getName());
@@ -82,13 +95,46 @@ public class AuthService {
     if (userEmail) {
       errorsMap.put("email", "Этот e-mail уже зарегистрирован");
     }
-    if (registerRequest.getPassword().length() < 6) {
+    if (!registerRequest.getName().matches(regexName)) {
+      errorsMap.put("name", "Имя указано неверно");
+    }
+    if (passwordLength < 6) {
       errorsMap.put("password", "Пароль короче 6-ти символов");
     }
-    if (captcha.isEmpty()) {
+    if (!compareCaptcha) {
       errorsMap.put("captcha", "Код с картинки введён неверно");
     }
     registerResponse.setErrors(errorsMap);
     return registerResponse;
+  }
+
+  @Scheduled(fixedRate = CAPTCHA_CLEAR_TIME)
+  public void deleteCaptcha() {
+    captchaRepository.deleteAll();
+  }
+
+  public LoginResponse getLoginResponse(String email) {
+    com.example.blog.model.User currentUser = userRepository.findByEmail(email)
+        .orElseThrow(() -> new UsernameNotFoundException(email));
+    UserDto userDto = mapperService.convertUserToDto(currentUser);
+    LoginResponse loginResponse = new LoginResponse();
+    loginResponse.setResult(true);
+    loginResponse.setUserDto(userDto);
+    return loginResponse;
+  }
+
+  public Authentication getAuthentication(String email, String password) {
+    Authentication auth = authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(email, password));
+    SecurityContextHolder.getContext().setAuthentication(auth);
+    return auth;
+  }
+
+  public LoginResponse getLogout() {
+    LoginResponse loginResponse = new LoginResponse();
+    loginResponse.setResult(true);
+    SecurityContextHolder.getContext().setAuthentication(null);
+    SecurityContextHolder.clearContext();
+    return loginResponse;
   }
 }

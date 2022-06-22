@@ -1,14 +1,16 @@
 package com.example.blog.controller;
 
-
+import com.example.blog.api.request.LoginRequest;
 import com.example.blog.api.request.RegisterRequest;
 import com.example.blog.api.response.CaptchaResponse;
-import com.example.blog.api.response.CheckResponse;
+import com.example.blog.api.response.LoginResponse;
 import com.example.blog.api.response.RegisterResponse;
 import com.example.blog.service.AuthService;
 import java.io.IOException;
+import java.security.Principal;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,8 +32,11 @@ public class ApiAuthController {
   }
 
   @GetMapping("/check")
-  private ResponseEntity<CheckResponse> checkResponse() {
-    return new ResponseEntity<>(authService.getCheckResponse(), HttpStatus.OK);
+  private ResponseEntity<LoginResponse> checkResponse(Principal principal) {
+    if (principal == null) {
+      return new ResponseEntity<>(new LoginResponse(), HttpStatus.OK);
+    }
+    return new ResponseEntity<>(authService.getLoginResponse(principal.getName()), HttpStatus.OK);
   }
 
   @GetMapping("/captcha")
@@ -43,5 +48,17 @@ public class ApiAuthController {
   private ResponseEntity<RegisterResponse> registerResponse(
       @RequestBody RegisterRequest registerRequest) {
     return new ResponseEntity<>(authService.getRegisterResponse(registerRequest), HttpStatus.OK);
+  }
+
+  @PostMapping("/login")
+  private ResponseEntity<LoginResponse> loginResponse(@RequestBody LoginRequest loginRequest) {
+    User user = (User) authService.getAuthentication(
+        loginRequest.getEmail(), loginRequest.getPassword()).getPrincipal();
+    return new ResponseEntity<>(authService.getLoginResponse(user.getUsername()), HttpStatus.OK);
+  }
+
+  @GetMapping("/logout")
+  private ResponseEntity<LoginResponse> logoutResponse() {
+    return new ResponseEntity<>(authService.getLogout(), HttpStatus.OK);
   }
 }

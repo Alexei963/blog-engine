@@ -14,6 +14,7 @@ import lombok.Setter;
 @Setter
 @JsonInclude(Include.NON_EMPTY)
 public class RegisterResponse {
+
   private boolean result;
   private Map<String, String> errors;
 }

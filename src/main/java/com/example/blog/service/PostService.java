@@ -100,4 +100,22 @@ public class PostService {
     });
     return postResponse;
   }
+
+  public PostListResponse getMyPosts(String email, int offset, int limit, String status) {
+    Page<Post> page;
+    switch (status) {
+      case "inactive":
+        page = postRepository.findMyInactivePosts(email, getPageable(offset, limit));
+        break;
+      case "pending":
+        page = postRepository.findMyPendingPosts(email, getPageable(offset, limit));
+        break;
+      case "declined":
+        page = postRepository.findMyDeclinedPosts(email, getPageable(offset, limit));
+        break;
+      default:
+        page = postRepository.findMyPublishedPosts(email, getPageable(offset, limit));
+    }
+    return getResponse(page);
+  }
 }

@@ -8,6 +8,7 @@ import com.example.blog.model.Post;
 import com.example.blog.model.PostComment;
 import com.example.blog.model.Tag;
 import com.example.blog.model.User;
+import com.example.blog.repository.PostRepository;
 import java.util.ArrayList;
 import java.util.List;
 import org.modelmapper.ModelMapper;
@@ -23,10 +24,13 @@ public class MapperService {
 
   private final ModelMapper mapper;
   private final TagService tagService;
+  private final PostRepository postRepository;
 
-  public MapperService(ModelMapper mapper, @Lazy TagService tagService) {
+  public MapperService(ModelMapper mapper, @Lazy TagService tagService,
+      PostRepository postRepository) {
     this.mapper = mapper;
     this.tagService = tagService;
+    this.postRepository = postRepository;
   }
 
   public PostDto convertPostToDto(Post post) {
@@ -59,8 +63,15 @@ public class MapperService {
     return tagDto;
   }
 
-  private UserDto convertUserToDto(User user) {
-    return mapper.map(user, UserDto.class);
+  public UserDto convertUserToDto(User user) {
+    UserDto userDto = mapper.map(user, UserDto.class);
+    boolean moderation = user.getIsModerator() == 1;
+    userDto.setModeration(moderation);
+    if (moderation) {
+      userDto.setModerationCount(postRepository.countByModerationStatus());
+      userDto.setSettings(true);
+    }
+    return userDto;
   }
 
   private CommentDto convertCommentToDto(PostComment postComment) {
