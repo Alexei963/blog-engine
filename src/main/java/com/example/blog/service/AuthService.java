@@ -27,6 +27,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -41,15 +42,18 @@ public class AuthService {
   private final UserRepository userRepository;
   private final MapperService mapperService;
   private final AuthenticationManager authenticationManager;
+  private final PasswordEncoder passwordEncoder;
   public static final int CAPTCHA_CLEAR_TIME = 3_600_000;
 
   public AuthService(CaptchaRepository captchaRepository,
       UserRepository userRepository, MapperService mapperService,
-      AuthenticationManager authenticationManager) {
+      AuthenticationManager authenticationManager,
+      PasswordEncoder passwordEncoder) {
     this.captchaRepository = captchaRepository;
     this.userRepository = userRepository;
     this.mapperService = mapperService;
     this.authenticationManager = authenticationManager;
+    this.passwordEncoder = passwordEncoder;
   }
 
   public CaptchaResponse getCaptchaResponse() throws IOException {
@@ -88,7 +92,7 @@ public class AuthService {
       user.setRegTime(new Date());
       user.setName(registerRequest.getName());
       user.setEmail(registerRequest.getEmail());
-      user.setPassword(registerRequest.getPassword());
+      user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
       userRepository.save(user);
       registerResponse.setResult(true);
     }

@@ -114,4 +114,19 @@ public interface PostRepository extends CrudRepository<Post, Integer> {
       + "where u.email = :email "
       + "and p.is_active = 1 and p.moderation_status = 'ACCEPTED'", nativeQuery = true)
   Page<Post> findMyPublishedPosts(@Param("email") String email, Pageable pageable);
+
+  @Query(value = "select * "
+      + "from posts p "
+      + "where p.is_active = 1 and p.moderation_status = 'NEW'", nativeQuery = true)
+  Page<Post> findPostsByModerationStatus_New(Pageable pageable);
+
+  @Query(value = "select * "
+      + "from posts p "
+      + "where p.is_active = 1 and p.moderation_status = 'DECLINED'", nativeQuery = true)
+  Page<Post> findPostsByModerationStatus_Declined(Pageable pageable);
+
+  @Query(value = "select * "
+      + "from posts p "
+      + "where p.is_active = 1 and p.moderation_status = 'ACCEPTED'", nativeQuery = true)
+  Page<Post> findPostsByModerationStatus_Accepted(Pageable pageable);
 }

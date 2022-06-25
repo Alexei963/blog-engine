@@ -1,13 +1,18 @@
 package com.example.blog.controller;
 
+import com.example.blog.api.request.PostRequest;
 import com.example.blog.api.response.PostByIdResponse;
 import com.example.blog.api.response.PostListResponse;
+import com.example.blog.api.response.PostResponse;
 import com.example.blog.service.PostService;
 import java.security.Principal;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,7 +32,7 @@ public class ApiPostController {
   }
 
   @GetMapping("")
-  private ResponseEntity<PostListResponse> getAllPosts(
+  public ResponseEntity<PostListResponse> getAllPosts(
       @RequestParam(defaultValue = "0") int offset,
       @RequestParam(defaultValue = "10") int limit,
       @RequestParam(defaultValue = "recent") String mode) {
@@ -59,16 +64,27 @@ public class ApiPostController {
   }
 
   @GetMapping("/{id}")
-  private ResponseEntity<PostByIdResponse> getPost(@PathVariable int id) {
-    if (!(postService.getPost(id) == null)) {
-      return new ResponseEntity<>(postService.getPost(id), HttpStatus.OK);
+  public ResponseEntity<PostByIdResponse> getPostById(@PathVariable int id, Principal principal) {
+    if (postService.findPostById(id)) {
+      return new ResponseEntity<>(postService.getPostById(id, principal), HttpStatus.OK);
     } else {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
   }
 
+  @GetMapping("/moderation")
+  @PreAuthorize("hasAuthority('user:moderate')")
+  public ResponseEntity<PostListResponse> getPostsModeration(
+      @RequestParam(defaultValue = "0") int offset,
+      @RequestParam(defaultValue = "10") int limit,
+      @RequestParam(required = false) String status
+  ) {
+    return new ResponseEntity<>(postService.getPostsModeration(
+        offset, limit, status), HttpStatus.OK);
+  }
+
   @GetMapping("/my")
-  private ResponseEntity<PostListResponse> getMyPosts(
+  public ResponseEntity<PostListResponse> getMyPosts(
       Principal principal,
       @RequestParam(defaultValue = "0") int offset,
       @RequestParam(defaultValue = "10") int limit,
@@ -76,5 +92,14 @@ public class ApiPostController {
   ) {
     return new ResponseEntity<>(postService.getMyPosts(
         principal.getName(), offset, limit, status), HttpStatus.OK);
+  }
+
+  @PostMapping("")
+  @PreAuthorize("hasAuthority('user:write')")
+  public ResponseEntity<PostResponse> addPost(
+      Principal principal,
+      @RequestBody PostRequest postRequest) {
+    postRequest.getTags().forEach(System.out::println);
+    return new ResponseEntity<>(postService.addPost(principal, postRequest), HttpStatus.OK);
   }
 }

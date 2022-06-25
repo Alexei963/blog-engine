@@ -1,13 +1,26 @@
 package com.example.blog.service;
 
+import com.example.blog.api.request.PostRequest;
 import com.example.blog.api.response.PostByIdResponse;
 import com.example.blog.api.response.PostListResponse;
+import com.example.blog.api.response.PostResponse;
 import com.example.blog.dto.PostDto;
+import com.example.blog.model.ModerationStatus;
 import com.example.blog.model.Post;
+import com.example.blog.model.Tag;
+import com.example.blog.model.User;
 import com.example.blog.repository.PostRepository;
+import com.example.blog.repository.TagRepository;
+import com.example.blog.repository.UserRepository;
+import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,11 +36,16 @@ public class PostService {
 
   private final PostRepository postRepository;
   private final MapperService mapperService;
+  private final UserRepository userRepository;
+  private final TagRepository tagRepository;
 
   public PostService(PostRepository postRepository,
-      MapperService mapperService) {
+      MapperService mapperService, UserRepository userRepository,
+      TagRepository tagRepository) {
     this.postRepository = postRepository;
     this.mapperService = mapperService;
+    this.userRepository = userRepository;
+    this.tagRepository = tagRepository;
   }
 
   private PostListResponse getResponse(Page<Post> page) {
@@ -81,10 +99,28 @@ public class PostService {
     return getResponse(page);
   }
 
-  public PostByIdResponse getPost(int id) {
+  public boolean findPostById(int id) {
+    return postRepository.findById(id).isPresent();
+  }
+
+  public PostByIdResponse getPostById(int id, Principal principal) {
     PostByIdResponse postResponse = new PostByIdResponse();
-    Optional<Post> post = postRepository.findById(id);
-    post.ifPresent(value -> {
+    Optional<Post> optionalPost = postRepository.findById(id);
+    Optional<User> optionalUser;
+    User user;
+    if (principal != null) {
+      optionalUser = userRepository.findByEmail(principal.getName());
+      user = optionalUser.orElse(null);
+      assert user != null;
+      if (user.getIsModerator() != 1 && optionalPost.isPresent()
+          && !user.equals(optionalPost.get().getUser())) {
+        postViewIncrease(optionalPost.get());
+      }
+    }
+    if (principal == null && optionalPost.isPresent()) {
+      postViewIncrease(optionalPost.get());
+    }
+    optionalPost.ifPresent(value -> {
       PostDto postDto = mapperService.convertPostToDto(value);
       postResponse.setId(postDto.getId());
       postResponse.setTimestamp(postDto.getTime());
@@ -99,6 +135,13 @@ public class PostService {
       postResponse.setTags(postDto.getTagsDto());
     });
     return postResponse;
+  }
+
+  private void postViewIncrease(Post post) {
+    int viewsCount;
+    viewsCount = post.getViewCount() + 1;
+    post.setViewCount(viewsCount);
+    postRepository.save(post);
   }
 
   public PostListResponse getMyPosts(String email, int offset, int limit, String status) {
@@ -117,5 +160,50 @@ public class PostService {
         page = postRepository.findMyPublishedPosts(email, getPageable(offset, limit));
     }
     return getResponse(page);
+  }
+
+  public PostListResponse getPostsModeration(int offset, int limit, String status) {
+    Page<Post> page;
+    switch (status) {
+      case "new":
+        page = postRepository.findPostsByModerationStatus_New(getPageable(offset, limit));
+        break;
+      case "declined":
+        page = postRepository.findPostsByModerationStatus_Declined(getPageable(offset, limit));
+        break;
+      default:
+        page = postRepository.findPostsByModerationStatus_Accepted(getPageable(offset, limit));
+    }
+    return getResponse(page);
+  }
+
+  public PostResponse addPost(Principal principal, PostRequest postRequest) {
+    PostResponse postResponse = new PostResponse();
+    Map<String, String> errorsMap = new LinkedHashMap<>();
+    Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+    List<Tag> tagList = tagRepository.findAll();
+    Set<Tag> tags = new HashSet<>(tagList);
+    if (optionalUser.isPresent() && postRequest.getTitle().length() > 3
+        && postRequest.getText().length() > 50) {
+      User user = optionalUser.get();
+      Post post = new Post();
+      post.setUser(user);
+      post.setTime(new Date());
+      post.setModerationStatus(ModerationStatus.NEW);
+      post.setIsActive(postRequest.getActive());
+      post.setTitle(postRequest.getTitle());
+      post.setTags(tags);
+      post.setText(postRequest.getText());
+      postRepository.save(post);
+      postResponse.setResult(true);
+    }
+    if (postRequest.getTitle().length() < 3) {
+      errorsMap.put("title", "Заголовок не установлен");
+    }
+    if (postRequest.getText().length() < 50) {
+      errorsMap.put("text", "Текст публикации слишком короткий");
+    }
+    postResponse.setErrors(errorsMap);
+    return postResponse;
   }
 }
