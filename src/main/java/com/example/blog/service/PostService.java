@@ -179,17 +179,57 @@ public class PostService {
 
   public PostResponse addPost(Principal principal, PostRequest postRequest) {
     PostResponse postResponse = new PostResponse();
-    Map<String, String> errorsMap = new LinkedHashMap<>();
     Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
-    List<Tag> tagList = tagRepository.findAll();
-    Set<Tag> tags = new HashSet<>(tagList);
-    if (optionalUser.isPresent() && postRequest.getTitle().length() > 3
-        && postRequest.getText().length() > 50) {
-      User user = optionalUser.get();
+    if (optionalUser.isPresent()) {
       Post post = new Post();
+      User user = optionalUser.get();
+      addOrEditPost(postResponse, postRequest, user, post, ModerationStatus.NEW);
+    }
+    return postResponse;
+  }
+
+  public PostResponse editPost(int id, PostRequest postRequest, Principal principal) {
+    PostResponse postResponse = new PostResponse();
+    Optional<Post> optionalPost = postRepository.findById(id);
+    Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+    if (optionalPost.isPresent() && optionalUser.isPresent()) {
+      Post post = optionalPost.get();
+      User user = post.getUser();
+      if (optionalUser.get().getIsModerator() == 1) {
+        addOrEditPost(postResponse, postRequest, user, post, post.getModerationStatus());
+      } else {
+        addOrEditPost(postResponse, postRequest, user, post, ModerationStatus.NEW);
+      }
+    }
+    return postResponse;
+  }
+
+  private void addOrEditPost(PostResponse postResponse, PostRequest postRequest,
+      User user, Post post, ModerationStatus moderationStatus) {
+    Map<String, String> errorsMap = new LinkedHashMap<>();
+    Set<Tag> tags = new HashSet<>();
+    postRequest.getTags().forEach(t -> {
+      if (!tagRepository.findAll().stream()
+          .map(Tag::getName)
+          .collect(Collectors.toList())
+          .contains(t)) {
+        Tag tag = new Tag();
+        tag.setName(t);
+        tagRepository.save(tag);
+      }
+      Tag tag = tagRepository.findByName(t);
+      tags.add(tag);
+    });
+    if (postRequest.getTitle().length() > 3
+        && postRequest.getText().length() > 50) {
       post.setUser(user);
-      post.setTime(new Date());
-      post.setModerationStatus(ModerationStatus.NEW);
+      Date date = new Date(postRequest.getTimestamp() * 1000);
+      if (date.before(new Date())) {
+        post.setTime(new Date());
+      } else {
+        post.setTime(date);
+      }
+      post.setModerationStatus(moderationStatus);
       post.setIsActive(postRequest.getActive());
       post.setTitle(postRequest.getTitle());
       post.setTags(tags);
@@ -204,6 +244,5 @@ public class PostService {
       errorsMap.put("text", "Текст публикации слишком короткий");
     }
     postResponse.setErrors(errorsMap);
-    return postResponse;
   }
 }

@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -56,7 +57,7 @@ public class ApiPostController {
   }
 
   @GetMapping("/byTag")
-  private ResponseEntity<PostListResponse> getPostsByTag(
+  public ResponseEntity<PostListResponse> getPostsByTag(
       @RequestParam(defaultValue = "0") int offset,
       @RequestParam(defaultValue = "10") int limit,
       @RequestParam(required = false) String tag) {
@@ -97,9 +98,15 @@ public class ApiPostController {
   @PostMapping("")
   @PreAuthorize("hasAuthority('user:write')")
   public ResponseEntity<PostResponse> addPost(
-      Principal principal,
-      @RequestBody PostRequest postRequest) {
-    postRequest.getTags().forEach(System.out::println);
+      @RequestBody PostRequest postRequest, Principal principal) {
     return new ResponseEntity<>(postService.addPost(principal, postRequest), HttpStatus.OK);
+  }
+
+  @PutMapping("/{id}")
+  @PreAuthorize("hasAuthority('user:write')")
+  public ResponseEntity<PostResponse> editPost(
+      @PathVariable int id,
+      @RequestBody PostRequest postRequest, Principal principal) {
+    return new ResponseEntity<>(postService.editPost(id, postRequest, principal), HttpStatus.OK);
   }
 }
