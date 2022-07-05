@@ -5,6 +5,8 @@ spring.jpa.show-sql: false
 spring.jpa.generate-ddl: false
 spring.jpa.hibernate.ddl-auto: validate
 spring.flyway.locations: classpath:db.migration
+spring.servlet.multipart.max-file-size: 50MB
+spring.servlet.multipart.max-request-size: 50MB
 
 blog.title: DevPub
 blog.subtitle: Рассказы разработчиков
@@ -12,3 +14,6 @@ blog.phone: +7 917 333-44-55
 blog.email: dmitry-mail@gmail.com
 blog.copyright: Дмитрий Сергеев
 blog.copyrightFrom: 2020
+
+upload.path: /upload
+

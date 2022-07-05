@@ -3,7 +3,7 @@ package com.example.blog.controller;
 import com.example.blog.api.request.PostRequest;
 import com.example.blog.api.response.PostByIdResponse;
 import com.example.blog.api.response.PostListResponse;
-import com.example.blog.api.response.PostResponse;
+import com.example.blog.api.response.ResultAndErrorsResponse;
 import com.example.blog.service.PostService;
 import java.security.Principal;
 import org.springframework.http.HttpStatus;
@@ -97,14 +97,14 @@ public class ApiPostController {
 
   @PostMapping("")
   @PreAuthorize("hasAuthority('user:write')")
-  public ResponseEntity<PostResponse> addPost(
+  public ResponseEntity<ResultAndErrorsResponse> addPost(
       @RequestBody PostRequest postRequest, Principal principal) {
     return new ResponseEntity<>(postService.addPost(principal, postRequest), HttpStatus.OK);
   }
 
   @PutMapping("/{id}")
   @PreAuthorize("hasAuthority('user:write')")
-  public ResponseEntity<PostResponse> editPost(
+  public ResponseEntity<ResultAndErrorsResponse> editPost(
       @PathVariable int id,
       @RequestBody PostRequest postRequest, Principal principal) {
     return new ResponseEntity<>(postService.editPost(id, postRequest, principal), HttpStatus.OK);

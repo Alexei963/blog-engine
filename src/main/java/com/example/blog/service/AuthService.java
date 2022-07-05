@@ -3,7 +3,7 @@ package com.example.blog.service;
 import com.example.blog.api.request.RegisterRequest;
 import com.example.blog.api.response.CaptchaResponse;
 import com.example.blog.api.response.LoginResponse;
-import com.example.blog.api.response.RegisterResponse;
+import com.example.blog.api.response.ResultAndErrorsResponse;
 import com.example.blog.dto.UserDto;
 import com.example.blog.model.Captcha;
 import com.example.blog.model.User;
@@ -43,7 +43,7 @@ public class AuthService {
   private final MapperService mapperService;
   private final AuthenticationManager authenticationManager;
   private final PasswordEncoder passwordEncoder;
-  public static final int CAPTCHA_CLEAR_TIME = 3_600_000;
+  private static final int CAPTCHA_CLEAR_TIME = 3_600_000;
 
   public AuthService(CaptchaRepository captchaRepository,
       UserRepository userRepository, MapperService mapperService,
@@ -77,8 +77,8 @@ public class AuthService {
     return captchaResponse;
   }
 
-  public RegisterResponse getRegisterResponse(RegisterRequest registerRequest) {
-    RegisterResponse registerResponse = new RegisterResponse();
+  public ResultAndErrorsResponse getRegisterResponse(RegisterRequest registerRequest) {
+    ResultAndErrorsResponse registerResponse = new ResultAndErrorsResponse();
     Captcha captcha = captchaRepository.findBySecretCode(registerRequest.getCaptchaSecret());
     boolean userEmail = userRepository.findByEmail(registerRequest.getEmail()).isPresent();
     String regexName = "[А-Яа-яA-Za-z]+([А-Яа-яA-Za-z\\s]+)?";

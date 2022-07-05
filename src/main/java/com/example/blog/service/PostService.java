@@ -3,7 +3,7 @@ package com.example.blog.service;
 import com.example.blog.api.request.PostRequest;
 import com.example.blog.api.response.PostByIdResponse;
 import com.example.blog.api.response.PostListResponse;
-import com.example.blog.api.response.PostResponse;
+import com.example.blog.api.response.ResultAndErrorsResponse;
 import com.example.blog.dto.PostDto;
 import com.example.blog.model.ModerationStatus;
 import com.example.blog.model.Post;
@@ -177,8 +177,8 @@ public class PostService {
     return getResponse(page);
   }
 
-  public PostResponse addPost(Principal principal, PostRequest postRequest) {
-    PostResponse postResponse = new PostResponse();
+  public ResultAndErrorsResponse addPost(Principal principal, PostRequest postRequest) {
+    ResultAndErrorsResponse postResponse = new ResultAndErrorsResponse();
     Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
     if (optionalUser.isPresent()) {
       Post post = new Post();
@@ -188,8 +188,8 @@ public class PostService {
     return postResponse;
   }
 
-  public PostResponse editPost(int id, PostRequest postRequest, Principal principal) {
-    PostResponse postResponse = new PostResponse();
+  public ResultAndErrorsResponse editPost(int id, PostRequest postRequest, Principal principal) {
+    ResultAndErrorsResponse postResponse = new ResultAndErrorsResponse();
     Optional<Post> optionalPost = postRepository.findById(id);
     Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
     if (optionalPost.isPresent() && optionalUser.isPresent()) {
@@ -204,7 +204,7 @@ public class PostService {
     return postResponse;
   }
 
-  private void addOrEditPost(PostResponse postResponse, PostRequest postRequest,
+  private void addOrEditPost(ResultAndErrorsResponse postResponse, PostRequest postRequest,
       User user, Post post, ModerationStatus moderationStatus) {
     Map<String, String> errorsMap = new LinkedHashMap<>();
     Set<Tag> tags = new HashSet<>();

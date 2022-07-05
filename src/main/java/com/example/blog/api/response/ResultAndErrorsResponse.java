@@ -7,13 +7,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Register response.
+ *  Post response.
  */
 
 @Getter
 @Setter
 @JsonInclude(Include.NON_EMPTY)
-public class RegisterResponse {
+public class ResultAndErrorsResponse {
 
   private boolean result;
   private Map<String, String> errors;

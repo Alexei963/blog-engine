@@ -4,7 +4,7 @@ import com.example.blog.api.request.LoginRequest;
 import com.example.blog.api.request.RegisterRequest;
 import com.example.blog.api.response.CaptchaResponse;
 import com.example.blog.api.response.LoginResponse;
-import com.example.blog.api.response.RegisterResponse;
+import com.example.blog.api.response.ResultAndErrorsResponse;
 import com.example.blog.service.AuthService;
 import java.io.IOException;
 import java.security.Principal;
@@ -45,7 +45,7 @@ public class ApiAuthController {
   }
 
   @PostMapping("/register")
-  private ResponseEntity<RegisterResponse> registerResponse(
+  private ResponseEntity<ResultAndErrorsResponse> registerResponse(
       @RequestBody RegisterRequest registerRequest) {
     return new ResponseEntity<>(authService.getRegisterResponse(registerRequest), HttpStatus.OK);
   }
