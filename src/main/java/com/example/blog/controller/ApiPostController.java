@@ -41,7 +41,7 @@ public class ApiPostController {
   }
 
   @GetMapping("/search")
-  private ResponseEntity<PostListResponse> searchPosts(
+  public ResponseEntity<PostListResponse> searchPosts(
       @RequestParam(defaultValue = "0") int offset,
       @RequestParam(defaultValue = "10") int limit,
       @RequestParam(required = false) String query) {
@@ -49,7 +49,7 @@ public class ApiPostController {
   }
 
   @GetMapping("/byDate")
-  private ResponseEntity<PostListResponse> getPostsByDate(
+  public ResponseEntity<PostListResponse> getPostsByDate(
       @RequestParam(defaultValue = "0") int offset,
       @RequestParam(defaultValue = "10") int limit,
       @RequestParam(required = false) String date) {

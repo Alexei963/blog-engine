@@ -16,4 +16,5 @@ blog.copyright: Дмитрий Сергеев
 blog.copyrightFrom: 2020
 
 upload.path: /upload
+userPhotos.path: /users photos
 

@@ -74,7 +74,7 @@ public class MapperService {
     return userDto;
   }
 
-  private CommentDto convertCommentToDto(PostComment postComment) {
+  public CommentDto convertCommentToDto(PostComment postComment) {
     CommentDto commentDto = mapper.map(postComment, CommentDto.class);
     commentDto.setTime(postComment.getTime().getTime() / 1000);
     commentDto.setUserDto(convertUserToDto(postComment.getUser()));

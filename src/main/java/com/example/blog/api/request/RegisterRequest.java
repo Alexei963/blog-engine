@@ -3,6 +3,10 @@ package com.example.blog.api.request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+/**
+ * Register Request.
+ */
+
 @Data
 public class RegisterRequest {
   @JsonProperty("e_mail")

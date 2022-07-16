@@ -6,15 +6,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Login Request.
+ * Moderation Request.
  */
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginRequest {
+public class ModerationRequest {
 
-  @JsonProperty("e_mail")
-  private String email;
-  private String password;
+  @JsonProperty("post_id")
+  private int postId;
+  private String decision;
 }

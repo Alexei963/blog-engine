@@ -3,6 +3,10 @@ package com.example.blog.api.request;
 import java.util.List;
 import lombok.Data;
 
+/**
+ * Post Request.
+ */
+
 @Data
 public class PostRequest {
 

@@ -22,10 +22,9 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class ImageService {
 
-  private static final int MAX_IMAGE_SIZE = 10485760; // 10 мегабайт
-  private static final int IMAGE_WIDTH = 300;
+  private static final int MAX_IMAGE_SIZE = 5242880; // 5 мегабайт
 
-  public String getImagePath(MultipartFile image, String path) throws IOException {
+  public String getImagePath(MultipartFile image, String path, int imageWidth) throws IOException {
     File uploadedImage = null;
     StringBuilder newPath = new StringBuilder();
     if (image != null) {
@@ -44,7 +43,7 @@ public class ImageService {
           uploadedImage = new File(newPath + "/" + imageName);
           BufferedImage oldImage = ImageIO.read(image.getInputStream());
           BufferedImage newImage = Scalr.resize(oldImage,
-              Method.ULTRA_QUALITY, Mode.FIT_TO_WIDTH, IMAGE_WIDTH);
+              Method.ULTRA_QUALITY, Mode.FIT_TO_WIDTH, imageWidth);
           ImageIO.write(newImage, "jpg", uploadedImage);
         }
       }

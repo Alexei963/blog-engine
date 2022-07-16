@@ -6,15 +6,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Login Request.
+ * Comment Request.
  */
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginRequest {
+public class CommentRequest {
 
-  @JsonProperty("e_mail")
-  private String email;
-  private String password;
+  @JsonProperty("parent_id")
+  private int parentId;
+  @JsonProperty("post_id")
+  private int postId;
+  private String text;
 }
