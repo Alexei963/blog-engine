@@ -2,9 +2,11 @@ package com.example.blog.controller;
 
 import com.example.blog.api.request.LoginRequest;
 import com.example.blog.api.request.RegisterRequest;
+import com.example.blog.api.request.RestorePasswordRequest;
 import com.example.blog.api.response.CaptchaResponse;
 import com.example.blog.api.response.LoginResponse;
 import com.example.blog.api.response.ResultAndErrorsResponse;
+import com.example.blog.api.response.ResultResponse;
 import com.example.blog.service.AuthService;
 import java.io.IOException;
 import java.security.Principal;
@@ -60,5 +62,11 @@ public class ApiAuthController {
   @GetMapping("/logout")
   private ResponseEntity<LoginResponse> logoutResponse() {
     return new ResponseEntity<>(authService.getLogout(), HttpStatus.OK);
+  }
+
+  @PostMapping("/restore")
+  public ResponseEntity<ResultResponse> restorePassword(
+      @RequestBody RestorePasswordRequest restorePasswordRequest) {
+    return new ResponseEntity<>(authService.send(restorePasswordRequest), HttpStatus.OK);
   }
 }

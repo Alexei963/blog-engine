@@ -17,7 +17,6 @@ import com.example.blog.service.ProfileEditingService;
 import com.example.blog.service.SettingsService;
 import com.example.blog.service.TagService;
 import java.io.IOException;
-import java.security.Principal;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -106,10 +105,9 @@ public class ApiGeneralController {
 
   @PostMapping("/comment")
   @PreAuthorize("hasAuthority('user:write')")
-  public ResponseEntity<Object> addComment(@RequestBody CommentRequest commentRequest,
-      Principal principal) {
+  public ResponseEntity<Object> addComment(@RequestBody CommentRequest commentRequest) {
     if (commentService.commentAddingErrors(commentRequest).getErrors().isEmpty()) {
-      return new ResponseEntity<>(commentService.addComment(commentRequest, principal),
+      return new ResponseEntity<>(commentService.addComment(commentRequest),
           HttpStatus.OK);
     } else {
       return new ResponseEntity<>(commentService.commentAddingErrors(commentRequest),
@@ -120,8 +118,8 @@ public class ApiGeneralController {
   @PostMapping("/moderation")
   @PreAuthorize("hasAuthority('user:moderate')")
   public ResponseEntity<ResultResponse> postModeration(
-      @RequestBody ModerationRequest moderationRequest, Principal principal) {
-    return new ResponseEntity<>(moderationService.postModeration(moderationRequest, principal),
+      @RequestBody ModerationRequest moderationRequest) {
+    return new ResponseEntity<>(moderationService.postModeration(moderationRequest),
         HttpStatus.OK);
   }
 
@@ -131,8 +129,7 @@ public class ApiGeneralController {
       @RequestParam(required = false) MultipartFile photo,
       @RequestParam(required = false) String name,
       @RequestParam(required = false) String email,
-      @RequestParam(required = false) String password,
-      Principal principal) throws IOException {
+      @RequestParam(required = false) String password) throws IOException {
     if (!profileEditingService.profileChangeErrors(name,
         email, password).getErrors().isEmpty()) {
       return new ResponseEntity<>(profileEditingService.profileChangeErrors(
@@ -143,16 +140,16 @@ public class ApiGeneralController {
           HttpStatus.BAD_REQUEST);
     } else {
       return new ResponseEntity<>(profileEditingService.profileAndPhotoEditing(
-          photo, name, email, password, userPhotoPath, principal), HttpStatus.OK);
+          photo, name, email, password, userPhotoPath), HttpStatus.OK);
     }
   }
 
   @PostMapping(value = "/profile/my", consumes = {MediaType.APPLICATION_JSON_VALUE})
   @PreAuthorize("hasAuthority('user:write')")
   public ResponseEntity<ResultAndErrorsResponse> editProfileWithoutPhoto(
-      @RequestBody EditProfileRequest editProfileRequest, Principal principal) {
+      @RequestBody EditProfileRequest editProfileRequest) {
     if (editProfileRequest.getRemovePhoto() == 1) {
-      return new ResponseEntity<>(profileEditingService.deletePhoto(principal, editProfileRequest),
+      return new ResponseEntity<>(profileEditingService.deletePhoto(editProfileRequest),
           HttpStatus.OK);
     }
     if (!profileEditingService.profileChangeErrors(editProfileRequest.getName(),
@@ -161,9 +158,9 @@ public class ApiGeneralController {
           editProfileRequest.getName(), editProfileRequest.getEmail(),
           editProfileRequest.getPassword()), HttpStatus.BAD_REQUEST);
     } else {
-      return new ResponseEntity<>(profileEditingService.editProfileWithoutPhoto(editProfileRequest.getName(),
-          editProfileRequest.getEmail(), editProfileRequest.getPassword(), principal),
-          HttpStatus.OK);
+      return new ResponseEntity<>(profileEditingService.editProfileWithoutPhoto(
+          editProfileRequest.getName(), editProfileRequest.getEmail(),
+          editProfileRequest.getPassword()), HttpStatus.OK);
     }
   }
 }

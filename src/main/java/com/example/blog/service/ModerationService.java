@@ -6,8 +6,6 @@ import com.example.blog.model.ModerationStatus;
 import com.example.blog.model.Post;
 import com.example.blog.model.User;
 import com.example.blog.repository.PostRepository;
-import com.example.blog.repository.UserRepository;
-import java.security.Principal;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
@@ -19,22 +17,18 @@ import org.springframework.stereotype.Service;
 public class ModerationService {
 
   private final PostRepository postRepository;
-  private final UserRepository userRepository;
+  private final UserService userService;
 
-  public ModerationService(PostRepository postRepository, UserRepository userRepository) {
+  public ModerationService(PostRepository postRepository, UserService userService) {
     this.postRepository = postRepository;
-    this.userRepository = userRepository;
+    this.userService = userService;
   }
 
-  public ResultResponse postModeration(ModerationRequest moderationRequest, Principal principal) {
+  public ResultResponse postModeration(ModerationRequest moderationRequest) {
     ResultResponse result = new ResultResponse();
-    Optional<User> userOptional = userRepository.findByEmail(principal.getName());
     Optional<Post> postOptional = postRepository.findById((Integer) moderationRequest.getPostId());
-    User user = null;
+    User user = userService.getLoggedUser();
     Post post = null;
-    if (userOptional.isPresent()) {
-      user = userOptional.get();
-    }
     if (postOptional.isPresent()) {
       post = postOptional.get();
     }

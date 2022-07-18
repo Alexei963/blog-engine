@@ -9,8 +9,6 @@ import com.example.blog.model.PostComment;
 import com.example.blog.model.User;
 import com.example.blog.repository.CommentRepository;
 import com.example.blog.repository.PostRepository;
-import com.example.blog.repository.UserRepository;
-import java.security.Principal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -28,27 +26,21 @@ import org.springframework.stereotype.Service;
 public class CommentService {
 
   private final CommentRepository commentRepository;
-  private final UserRepository userRepository;
   private final PostRepository postRepository;
   private final MapperService mapperService;
+  private final UserService userService;
 
-  public CommentService(CommentRepository commentRepository,
-      UserRepository userRepository, PostRepository postRepository,
-      MapperService mapperService) {
+  public CommentService(CommentRepository commentRepository, PostRepository postRepository,
+      MapperService mapperService, UserService userService) {
     this.commentRepository = commentRepository;
-    this.userRepository = userRepository;
     this.postRepository = postRepository;
     this.mapperService = mapperService;
+    this.userService = userService;
   }
 
-  public CommentResponse addComment(CommentRequest commentRequest, Principal principal) {
-    Optional<User> userOptional = userRepository.findByEmail(principal.getName());
+  public CommentResponse addComment(CommentRequest commentRequest) {
     Optional<Post> postOptional = postRepository.findById(commentRequest.getPostId());
-    User user = null;
     Post post = null;
-    if (userOptional.isPresent()) {
-      user = userOptional.get();
-    }
     if (postOptional.isPresent()) {
       post = postOptional.get();
     }
@@ -58,6 +50,7 @@ public class CommentService {
     } else {
       comment.setParentId(commentRequest.getParentId());
     }
+    User user = userService.getLoggedUser();
     comment.setPost(post);
     comment.setUser(user);
     comment.setTime(new Date());
@@ -75,11 +68,16 @@ public class CommentService {
         .stream(commentRepository.findAll().spliterator(), false)
         .map(PostComment::getId)
         .collect(Collectors.toList());
+    List<Integer> listParentIdComments = StreamSupport
+        .stream(commentRepository.findAll().spliterator(), false)
+        .map(PostComment::getParentId)
+        .collect(Collectors.toList());
     List<Integer> listIdPosts = StreamSupport
         .stream(postRepository.findAll().spliterator(), false)
         .map(Post::getId)
         .collect(Collectors.toList());
-    if (!listIdComments.contains(commentRequest.getParentId())) {
+    if (!listParentIdComments.contains(commentRequest.getParentId())
+        && !listIdComments.contains(commentRequest.getParentId())) {
       errors.put("parent_id", "Такого комментария не существует");
     }
     if (!listIdPosts.contains(commentRequest.getPostId())) {

@@ -11,8 +11,6 @@ import com.example.blog.model.Tag;
 import com.example.blog.model.User;
 import com.example.blog.repository.PostRepository;
 import com.example.blog.repository.TagRepository;
-import com.example.blog.repository.UserRepository;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -36,16 +34,15 @@ public class PostService {
 
   private final PostRepository postRepository;
   private final MapperService mapperService;
-  private final UserRepository userRepository;
   private final TagRepository tagRepository;
+  private final UserService userService;
 
-  public PostService(PostRepository postRepository,
-      MapperService mapperService, UserRepository userRepository,
-      TagRepository tagRepository) {
+  public PostService(PostRepository postRepository, MapperService mapperService,
+      TagRepository tagRepository, UserService userService) {
     this.postRepository = postRepository;
     this.mapperService = mapperService;
-    this.userRepository = userRepository;
     this.tagRepository = tagRepository;
+    this.userService = userService;
   }
 
   private PostListResponse getResponse(Page<Post> page) {
@@ -103,21 +100,17 @@ public class PostService {
     return postRepository.findById(id).isPresent();
   }
 
-  public PostByIdResponse getPostById(int id, Principal principal) {
+  public PostByIdResponse getPostById(int id) {
     PostByIdResponse postResponse = new PostByIdResponse();
     Optional<Post> optionalPost = postRepository.findById(id);
-    Optional<User> optionalUser;
-    User user;
-    if (principal != null) {
-      optionalUser = userRepository.findByEmail(principal.getName());
-      user = optionalUser.orElse(null);
-      assert user != null;
+    User user = userService.getLoggedUser();
+    if (user != null) {
       if (user.getIsModerator() != 1 && optionalPost.isPresent()
           && !user.equals(optionalPost.get().getUser())) {
         postViewIncrease(optionalPost.get());
       }
     }
-    if (principal == null && optionalPost.isPresent()) {
+    if (user == null && optionalPost.isPresent()) {
       postViewIncrease(optionalPost.get());
     }
     optionalPost.ifPresent(value -> {
@@ -177,28 +170,26 @@ public class PostService {
     return getResponse(page);
   }
 
-  public ResultAndErrorsResponse addPost(Principal principal, PostRequest postRequest) {
+  public ResultAndErrorsResponse addPost(PostRequest postRequest) {
     ResultAndErrorsResponse postResponse = new ResultAndErrorsResponse();
-    Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
-    if (optionalUser.isPresent()) {
+    User user = userService.getLoggedUser();
+    if (user != null) {
       Post post = new Post();
-      User user = optionalUser.get();
       addOrEditPost(postResponse, postRequest, user, post, ModerationStatus.NEW);
     }
     return postResponse;
   }
 
-  public ResultAndErrorsResponse editPost(int id, PostRequest postRequest, Principal principal) {
+  public ResultAndErrorsResponse editPost(int id, PostRequest postRequest) {
     ResultAndErrorsResponse postResponse = new ResultAndErrorsResponse();
     Optional<Post> optionalPost = postRepository.findById(id);
-    Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
-    if (optionalPost.isPresent() && optionalUser.isPresent()) {
+    User user = userService.getLoggedUser();
+    if (optionalPost.isPresent() && user != null) {
       Post post = optionalPost.get();
-      User user = post.getUser();
-      if (optionalUser.get().getIsModerator() == 1) {
-        addOrEditPost(postResponse, postRequest, user, post, post.getModerationStatus());
+      if (user.getIsModerator()  == 1) {
+        addOrEditPost(postResponse, postRequest, post.getUser(), post, post.getModerationStatus());
       } else {
-        addOrEditPost(postResponse, postRequest, user, post, ModerationStatus.NEW);
+        addOrEditPost(postResponse, postRequest, post.getUser(), post, ModerationStatus.NEW);
       }
     }
     return postResponse;

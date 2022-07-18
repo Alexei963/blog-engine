@@ -1,9 +1,11 @@
 package com.example.blog.service;
 
 import com.example.blog.api.request.RegisterRequest;
+import com.example.blog.api.request.RestorePasswordRequest;
 import com.example.blog.api.response.CaptchaResponse;
 import com.example.blog.api.response.LoginResponse;
 import com.example.blog.api.response.ResultAndErrorsResponse;
+import com.example.blog.api.response.ResultResponse;
 import com.example.blog.dto.UserDto;
 import com.example.blog.model.Captcha;
 import com.example.blog.model.User;
@@ -17,9 +19,13 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -43,17 +49,22 @@ public class AuthService {
   private final MapperService mapperService;
   private final AuthenticationManager authenticationManager;
   private final PasswordEncoder passwordEncoder;
+  private final JavaMailSender mailSender;
+
+  @Value("{spring.mail.username}")
+  private String username;
   private static final int CAPTCHA_CLEAR_TIME = 3_600_000;
 
   public AuthService(CaptchaRepository captchaRepository,
       UserRepository userRepository, MapperService mapperService,
       AuthenticationManager authenticationManager,
-      PasswordEncoder passwordEncoder) {
+      PasswordEncoder passwordEncoder, JavaMailSender mailSender) {
     this.captchaRepository = captchaRepository;
     this.userRepository = userRepository;
     this.mapperService = mapperService;
     this.authenticationManager = authenticationManager;
     this.passwordEncoder = passwordEncoder;
+    this.mailSender = mailSender;
   }
 
   public CaptchaResponse getCaptchaResponse() throws IOException {
@@ -140,5 +151,30 @@ public class AuthService {
     SecurityContextHolder.getContext().setAuthentication(null);
     SecurityContextHolder.clearContext();
     return loginResponse;
+  }
+
+  public ResultResponse send(RestorePasswordRequest restorePasswordRequest) {
+    Optional<User> optionalUser = userRepository.findByEmail(restorePasswordRequest.getEmail());
+    User user = null;
+    if (optionalUser.isPresent()) {
+      user = optionalUser.get();
+    }
+    String link = "http://localhost:8080/login/change-password/";
+    String code = UUID.randomUUID().toString();
+    String passwordRecoveryLink = "Добрый день! \n"
+        + "Чтобы изменить пароль перейдите по ссылке: "
+        +  " <a href =\"" + link.concat(code) + "\">ссылка</a>";
+
+    user.setCode(code);
+    userRepository.save(user);
+    SimpleMailMessage mailMessage = new SimpleMailMessage();
+    mailMessage.setFrom(username);
+    mailMessage.setTo(restorePasswordRequest.getEmail());
+    mailMessage.setSubject("Restore password");
+    mailMessage.setText(passwordRecoveryLink);
+    mailSender.send(mailMessage);
+    ResultResponse response = new ResultResponse();
+    response.setResult(true);
+    return response;
   }
 }

@@ -5,10 +5,8 @@ import com.example.blog.api.response.ResultAndErrorsResponse;
 import com.example.blog.model.User;
 import com.example.blog.repository.UserRepository;
 import java.io.IOException;
-import java.security.Principal;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,38 +17,40 @@ public class ProfileEditingService {
   private final UserRepository userRepository;
   private final ImageService imageService;
   private final PasswordEncoder passwordEncoder;
+  private final UserService userService;
 
   private static final int PHOTO_WIDTH = 150;
   private static final int MAX_IMAGE_SIZE = 5242880; // 5 мегабайт
 
   public ProfileEditingService(UserRepository userRepository,
       ImageService imageService,
-      PasswordEncoder passwordEncoder) {
+      PasswordEncoder passwordEncoder, UserService userService) {
     this.userRepository = userRepository;
     this.imageService = imageService;
     this.passwordEncoder = passwordEncoder;
+    this.userService = userService;
   }
 
   public ResultAndErrorsResponse profileAndPhotoEditing(MultipartFile photo, String name,
-      String email, String password, String path, Principal principal) throws IOException {
+      String email, String password, String path) throws IOException {
     ResultAndErrorsResponse response = new ResultAndErrorsResponse();
-    User user = getUser(principal.getName());
-    if (photo != null && photo.getSize() < MAX_IMAGE_SIZE) {
+    User user = userService.getLoggedUser();
+    if (user != null && photo != null && photo.getSize() < MAX_IMAGE_SIZE) {
       user.setPhoto(imageService.getImagePath(photo, path, PHOTO_WIDTH));
       response.setResult(true);
     }
     if (name != null && email != null && password != null) {
-      editProfileWithoutPhoto(name, email, password, principal);
+      editProfileWithoutPhoto(name, email, password);
     }
+    assert user != null;
     userRepository.save(user);
     return response;
   }
 
-  public ResultAndErrorsResponse deletePhoto(Principal principal,
-      EditProfileRequest editProfileRequest) {
+  public ResultAndErrorsResponse deletePhoto(EditProfileRequest editProfileRequest) {
     ResultAndErrorsResponse response = new ResultAndErrorsResponse();
-    User user = getUser(principal.getName());
-    if (editProfileRequest.getRemovePhoto() == 1) {
+    User user = userService.getLoggedUser();
+    if (user != null && editProfileRequest.getRemovePhoto() == 1) {
       user.setPhoto(null);
       userRepository.save(user);
       response.setResult(true);
@@ -59,34 +59,27 @@ public class ProfileEditingService {
   }
 
   public ResultAndErrorsResponse editProfileWithoutPhoto(String name, String email,
-      String password, Principal principal) {
+      String password) {
     ResultAndErrorsResponse response = new ResultAndErrorsResponse();
-    User user = getUser(principal.getName());
+    User user = userService.getLoggedUser();
     boolean userEmail = userRepository.findByEmail(email).isPresent();
     String regexName = "[А-Яа-яA-Za-z]+([А-Яа-яA-Za-z\\s]+)?";
-    if (!user.getName().equals(name) && name.matches(regexName)) {
+    if (user != null && !user.getName().equals(name) && name.matches(regexName)) {
       user.setName(name);
       response.setResult(true);
     }
-    if (!user.getEmail().equals(email) || !userEmail) {
+    if (user != null && !user.getEmail().equals(email) || !userEmail) {
+      assert user != null;
       user.setEmail(email);
       response.setResult(true);
     }
-    if (password != null && !user.getPassword().equals(password)) {
+    if (user != null && password != null && !user.getPassword().equals(password)) {
       user.setPassword(passwordEncoder.encode(password));
       response.setResult(true);
     }
+    assert user != null;
     userRepository.save(user);
     return response;
-  }
-
-  private User getUser(String email) {
-    Optional<User> userOptional = userRepository.findByEmail(email);
-    User user = null;
-    if (userOptional.isPresent()) {
-      user = userOptional.get();
-    }
-    return user;
   }
 
   public ResultAndErrorsResponse imageChangeErrors(MultipartFile photo) {

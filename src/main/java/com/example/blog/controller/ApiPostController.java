@@ -65,9 +65,9 @@ public class ApiPostController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<PostByIdResponse> getPostById(@PathVariable int id, Principal principal) {
+  public ResponseEntity<PostByIdResponse> getPostById(@PathVariable int id) {
     if (postService.findPostById(id)) {
-      return new ResponseEntity<>(postService.getPostById(id, principal), HttpStatus.OK);
+      return new ResponseEntity<>(postService.getPostById(id), HttpStatus.OK);
     } else {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
@@ -98,15 +98,15 @@ public class ApiPostController {
   @PostMapping("")
   @PreAuthorize("hasAuthority('user:write')")
   public ResponseEntity<ResultAndErrorsResponse> addPost(
-      @RequestBody PostRequest postRequest, Principal principal) {
-    return new ResponseEntity<>(postService.addPost(principal, postRequest), HttpStatus.OK);
+      @RequestBody PostRequest postRequest) {
+    return new ResponseEntity<>(postService.addPost(postRequest), HttpStatus.OK);
   }
 
   @PutMapping("/{id}")
   @PreAuthorize("hasAuthority('user:write')")
   public ResponseEntity<ResultAndErrorsResponse> editPost(
       @PathVariable int id,
-      @RequestBody PostRequest postRequest, Principal principal) {
-    return new ResponseEntity<>(postService.editPost(id, postRequest, principal), HttpStatus.OK);
+      @RequestBody PostRequest postRequest) {
+    return new ResponseEntity<>(postService.editPost(id, postRequest), HttpStatus.OK);
   }
 }
