@@ -1,5 +1,6 @@
 package com.example.blog.service;
 
+import com.example.blog.api.request.ChangePasswordRequest;
 import com.example.blog.api.request.RegisterRequest;
 import com.example.blog.api.request.RestorePasswordRequest;
 import com.example.blog.api.response.CaptchaResponse;
@@ -161,12 +162,12 @@ public class AuthService {
     }
     String link = "http://localhost:8080/login/change-password/";
     String code = UUID.randomUUID().toString();
-    String passwordRecoveryLink = "Добрый день! \n"
-        + "Чтобы изменить пароль перейдите по ссылке: "
-        +  " <a href =\"" + link.concat(code) + "\">ссылка</a>";
-
+    assert user != null;
     user.setCode(code);
     userRepository.save(user);
+    String passwordRecoveryLink = String.format("Добрый день %s. \n"
+        + "Чтобы изменить пароль перейдите по ссылке: " + link.concat("%s"),
+        user.getName(), user.getCode());
     SimpleMailMessage mailMessage = new SimpleMailMessage();
     mailMessage.setFrom(username);
     mailMessage.setTo(restorePasswordRequest.getEmail());
@@ -174,6 +175,18 @@ public class AuthService {
     mailMessage.setText(passwordRecoveryLink);
     mailSender.send(mailMessage);
     ResultResponse response = new ResultResponse();
+    response.setResult(true);
+    return response;
+  }
+
+  public ResultAndErrorsResponse changePassword(ChangePasswordRequest changePasswordRequest) {
+    ResultAndErrorsResponse response = new ResultAndErrorsResponse();
+    Optional<User> optionalUser = userRepository.findByCode(changePasswordRequest.getCode());
+    User user = null;
+    if (optionalUser.isPresent()) {
+      user = optionalUser.get();
+    }
+
     response.setResult(true);
     return response;
   }

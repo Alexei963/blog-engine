@@ -1,5 +1,6 @@
 package com.example.blog.controller;
 
+import com.example.blog.api.request.ChangePasswordRequest;
 import com.example.blog.api.request.LoginRequest;
 import com.example.blog.api.request.RegisterRequest;
 import com.example.blog.api.request.RestorePasswordRequest;
@@ -68,5 +69,11 @@ public class ApiAuthController {
   public ResponseEntity<ResultResponse> restorePassword(
       @RequestBody RestorePasswordRequest restorePasswordRequest) {
     return new ResponseEntity<>(authService.send(restorePasswordRequest), HttpStatus.OK);
+  }
+
+  @PostMapping("/password")
+  public ResponseEntity<ResultAndErrorsResponse> changePassword(
+      @RequestBody ChangePasswordRequest changePasswordRequest) {
+    return new ResponseEntity<>(authService.changePassword(changePasswordRequest), HttpStatus.OK);
   }
 }
