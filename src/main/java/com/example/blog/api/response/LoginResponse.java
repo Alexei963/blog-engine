@@ -6,6 +6,10 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+/**
+ * Login Response.
+ */
+
 @Data
 @JsonInclude(Include.NON_NULL)
 public class LoginResponse {

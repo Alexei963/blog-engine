@@ -5,15 +5,13 @@ import com.example.blog.dto.UserDto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  *  Post by id response.
  */
 
-@Getter
-@Setter
+@Data
 public class PostByIdResponse {
 
   private int id;

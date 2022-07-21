@@ -1,14 +1,12 @@
 package com.example.blog.api.response;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  *  Result response.
  */
 
-@Getter
-@Setter
+@Data
 public class ResultResponse {
 
   private boolean result;

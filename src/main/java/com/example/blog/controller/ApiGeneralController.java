@@ -3,19 +3,24 @@ package com.example.blog.controller;
 import com.example.blog.api.request.CommentRequest;
 import com.example.blog.api.request.EditProfileRequest;
 import com.example.blog.api.request.ModerationRequest;
+import com.example.blog.api.request.SettingsRequest;
 import com.example.blog.api.response.CalendarResponse;
 import com.example.blog.api.response.InitResponse;
 import com.example.blog.api.response.ResultAndErrorsResponse;
 import com.example.blog.api.response.ResultResponse;
 import com.example.blog.api.response.SettingsResponse;
+import com.example.blog.api.response.StatisticsResponse;
 import com.example.blog.api.response.TagResponse;
+import com.example.blog.model.User;
 import com.example.blog.service.CalendarService;
 import com.example.blog.service.CommentService;
 import com.example.blog.service.ImageService;
 import com.example.blog.service.ModerationService;
 import com.example.blog.service.ProfileEditingService;
 import com.example.blog.service.SettingsService;
+import com.example.blog.service.StatisticsService;
 import com.example.blog.service.TagService;
+import com.example.blog.service.UserService;
 import java.io.IOException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -24,6 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,6 +52,8 @@ public class ApiGeneralController {
   private final CommentService commentService;
   private final ModerationService moderationService;
   private final ProfileEditingService profileEditingService;
+  private final StatisticsService statisticsService;
+  private final UserService userService;
 
   private static final int IMAGE_WIDTH = 300;
 
@@ -59,7 +67,8 @@ public class ApiGeneralController {
       SettingsService settingsService, TagService tagService,
       CalendarService calendarService, ImageService imageService,
       CommentService commentService, ModerationService moderationService,
-      ProfileEditingService profileEditingService) {
+      ProfileEditingService profileEditingService,
+      StatisticsService statisticsService, UserService userService) {
     this.initResponse = initResponse;
     this.settingsService = settingsService;
     this.tagService = tagService;
@@ -68,10 +77,12 @@ public class ApiGeneralController {
     this.commentService = commentService;
     this.moderationService = moderationService;
     this.profileEditingService = profileEditingService;
+    this.statisticsService = statisticsService;
+    this.userService = userService;
   }
 
   @GetMapping("/init")
-  private ResponseEntity<InitResponse> init() {
+  public ResponseEntity<InitResponse> init() {
     return new ResponseEntity<>(initResponse, HttpStatus.OK);
   }
 
@@ -162,5 +173,27 @@ public class ApiGeneralController {
           editProfileRequest.getName(), editProfileRequest.getEmail(),
           editProfileRequest.getPassword()), HttpStatus.OK);
     }
+  }
+
+  @GetMapping("/statistics/my")
+  @PreAuthorize("hasAuthority('user:write')")
+  public ResponseEntity<StatisticsResponse> myStatistics() {
+    return new ResponseEntity<>(statisticsService.getMyStatistics(), HttpStatus.OK);
+  }
+
+  @GetMapping("/statistics/all")
+  public ResponseEntity<StatisticsResponse> allStatistics() {
+    User user = userService.getLoggedUser();
+    if (user != null && user.getIsModerator() != 1) {
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+    return new ResponseEntity<>(statisticsService.getAllStatistics(), HttpStatus.OK);
+  }
+
+  @PutMapping("/settings")
+  @PreAuthorize("hasAuthority('user:moderate')")
+  public ResponseEntity<?> saveSettings(@RequestBody SettingsRequest settingsRequest) {
+    settingsService.saveSettings(settingsRequest);
+    return new ResponseEntity<>("", HttpStatus.OK);
   }
 }

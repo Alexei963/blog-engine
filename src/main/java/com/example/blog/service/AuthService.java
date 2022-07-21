@@ -155,39 +155,53 @@ public class AuthService {
   }
 
   public ResultResponse send(RestorePasswordRequest restorePasswordRequest) {
+    ResultResponse response = new ResultResponse();
     Optional<User> optionalUser = userRepository.findByEmail(restorePasswordRequest.getEmail());
-    User user = null;
+    User user;
     if (optionalUser.isPresent()) {
       user = optionalUser.get();
+      String code = UUID.randomUUID().toString();
+      user.setCode(code);
+      userRepository.save(user);
+      String link = "http://localhost:8080/login/change-password/";
+      String passwordRecoveryLink = String.format("Добрый день %s. \n"
+              + "Чтобы изменить пароль перейдите по ссылке: " + link.concat("%s"),
+          user.getName(), user.getCode());
+      SimpleMailMessage mailMessage = new SimpleMailMessage();
+      mailMessage.setFrom(username);
+      mailMessage.setTo(restorePasswordRequest.getEmail());
+      mailMessage.setSubject("Изменить пароль");
+      mailMessage.setText(passwordRecoveryLink);
+      mailSender.send(mailMessage);
+      response.setResult(true);
     }
-    String link = "http://localhost:8080/login/change-password/";
-    String code = UUID.randomUUID().toString();
-    assert user != null;
-    user.setCode(code);
-    userRepository.save(user);
-    String passwordRecoveryLink = String.format("Добрый день %s. \n"
-        + "Чтобы изменить пароль перейдите по ссылке: " + link.concat("%s"),
-        user.getName(), user.getCode());
-    SimpleMailMessage mailMessage = new SimpleMailMessage();
-    mailMessage.setFrom(username);
-    mailMessage.setTo(restorePasswordRequest.getEmail());
-    mailMessage.setSubject("Restore password");
-    mailMessage.setText(passwordRecoveryLink);
-    mailSender.send(mailMessage);
-    ResultResponse response = new ResultResponse();
-    response.setResult(true);
     return response;
   }
 
   public ResultAndErrorsResponse changePassword(ChangePasswordRequest changePasswordRequest) {
     ResultAndErrorsResponse response = new ResultAndErrorsResponse();
     Optional<User> optionalUser = userRepository.findByCode(changePasswordRequest.getCode());
+    Captcha captcha = captchaRepository.findBySecretCode(changePasswordRequest.getCaptchaSecret());
+    boolean compareCaptcha = captcha.getCode().equals(changePasswordRequest.getCaptcha());
     User user = null;
+    Map<String, String> errorsMap = new LinkedHashMap<>();
     if (optionalUser.isPresent()) {
       user = optionalUser.get();
     }
-
-    response.setResult(true);
+    int passwordLength = changePasswordRequest.getPassword().length();
+    if (passwordLength >= 6 && compareCaptcha) {
+      assert user != null;
+      user.setPassword(passwordEncoder.encode(changePasswordRequest.getPassword()));
+      userRepository.save(user);
+      response.setResult(true);
+    }
+    if (passwordLength < 6) {
+      errorsMap.put("password", "Пароль короче 6-ти символов");
+    }
+    if (!compareCaptcha) {
+      errorsMap.put("captcha", "Код с картинки введён неверно");
+    }
+    response.setErrors(errorsMap);
     return response;
   }
 }

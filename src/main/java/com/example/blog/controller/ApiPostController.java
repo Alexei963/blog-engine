@@ -1,9 +1,11 @@
 package com.example.blog.controller;
 
+import com.example.blog.api.request.PostIdRequest;
 import com.example.blog.api.request.PostRequest;
 import com.example.blog.api.response.PostByIdResponse;
 import com.example.blog.api.response.PostListResponse;
 import com.example.blog.api.response.ResultAndErrorsResponse;
+import com.example.blog.api.response.ResultResponse;
 import com.example.blog.service.PostService;
 import java.security.Principal;
 import org.springframework.http.HttpStatus;
@@ -108,5 +110,19 @@ public class ApiPostController {
       @PathVariable int id,
       @RequestBody PostRequest postRequest) {
     return new ResponseEntity<>(postService.editPost(id, postRequest), HttpStatus.OK);
+  }
+
+  @PostMapping("/like")
+  @PreAuthorize("hasAuthority('user:write')")
+  public ResponseEntity<ResultResponse> like(@RequestBody PostIdRequest postIdRequest) {
+    return new ResponseEntity<>(postService.getPostVote(postIdRequest, 1),
+        HttpStatus.OK);
+  }
+
+  @PostMapping("/dislike")
+  @PreAuthorize("hasAuthority('user:write')")
+  public ResponseEntity<ResultResponse> dislike(@RequestBody PostIdRequest postIdRequest) {
+    return new ResponseEntity<>(postService.getPostVote(postIdRequest, -1),
+        HttpStatus.OK);
   }
 }

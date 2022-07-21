@@ -44,8 +44,14 @@ public class MapperService {
       announce = announce.substring(0, 150).concat("...");
     }
     postDto.setAnnounce(announce);
-    postDto.setLikeCount(post.getVotes().size());
-    postDto.setDislikeCount(post.getVotes().size());
+    long likesCount = post.getVotes().stream()
+        .filter(postVote -> postVote.getValue() == 1)
+        .count();
+    postDto.setLikeCount((int) likesCount);
+    long dislikesCount = post.getVotes().stream()
+        .filter(postVote -> postVote.getValue() == -1)
+        .count();
+    postDto.setDislikeCount((int) dislikesCount);
     postDto.setCommentCount(post.getComments().size());
     List<CommentDto> commentDtoList = new ArrayList<>();
     List<PostComment> postCommentList = post.getComments();

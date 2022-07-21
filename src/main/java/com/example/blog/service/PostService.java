@@ -1,15 +1,19 @@
 package com.example.blog.service;
 
+import com.example.blog.api.request.PostIdRequest;
 import com.example.blog.api.request.PostRequest;
 import com.example.blog.api.response.PostByIdResponse;
 import com.example.blog.api.response.PostListResponse;
 import com.example.blog.api.response.ResultAndErrorsResponse;
+import com.example.blog.api.response.ResultResponse;
 import com.example.blog.dto.PostDto;
 import com.example.blog.model.ModerationStatus;
 import com.example.blog.model.Post;
+import com.example.blog.model.PostVote;
 import com.example.blog.model.Tag;
 import com.example.blog.model.User;
 import com.example.blog.repository.PostRepository;
+import com.example.blog.repository.PostVoteRepository;
 import com.example.blog.repository.TagRepository;
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,13 +40,16 @@ public class PostService {
   private final MapperService mapperService;
   private final TagRepository tagRepository;
   private final UserService userService;
+  private final PostVoteRepository postVoteRepository;
 
   public PostService(PostRepository postRepository, MapperService mapperService,
-      TagRepository tagRepository, UserService userService) {
+      TagRepository tagRepository, UserService userService,
+      PostVoteRepository postVoteRepository) {
     this.postRepository = postRepository;
     this.mapperService = mapperService;
     this.tagRepository = tagRepository;
     this.userService = userService;
+    this.postVoteRepository = postVoteRepository;
   }
 
   private PostListResponse getResponse(Page<Post> page) {
@@ -235,5 +242,40 @@ public class PostService {
       errorsMap.put("text", "Текст публикации слишком короткий");
     }
     postResponse.setErrors(errorsMap);
+  }
+
+  public ResultResponse getPostVote(PostIdRequest postIdRequest, int postVoteValue) {
+    ResultResponse response = new ResultResponse();
+    Optional<Post> postOptional = postRepository.findById(postIdRequest.getPostId());
+    User user = userService.getLoggedUser();
+    Post post;
+    if (user != null && postOptional.isPresent()) {
+      post = postOptional.get();
+      List<User> postVotes = post.getVotes().stream()
+          .map(PostVote::getUser)
+          .collect(Collectors.toList());
+      Optional<PostVote> optionalPostVote =
+          postVoteRepository.findPostVoteByUserId(user.getId(), post.getId());
+      if (optionalPostVote.isPresent() && postVotes.contains(user)) {
+        PostVote postVote = optionalPostVote.get();
+        if (postVote.getValue() == postVoteValue) {
+          response.setResult(false);
+        } else {
+          postVote.setTime(new Date());
+          postVote.setValue(postVoteValue);
+          postVoteRepository.save(postVote);
+          response.setResult(true);
+        }
+      } else {
+        PostVote postVote = new PostVote();
+        postVote.setUser(user);
+        postVote.setPost(post);
+        postVote.setTime(new Date());
+        postVote.setValue(postVoteValue);
+        postVoteRepository.save(postVote);
+        response.setResult(true);
+      }
+    }
+    return response;
   }
 }

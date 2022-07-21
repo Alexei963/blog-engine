@@ -1,14 +1,14 @@
-package com.example.blog.api.response;
+package com.example.blog.api.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 /**
- * Settings Response.
+ * Settings Request.
  */
 
 @Data
-public class SettingsResponse {
+public class SettingsRequest {
 
   @JsonProperty("MULTIUSER_MODE")
   private boolean multiUserMode;

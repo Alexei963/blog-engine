@@ -1,7 +1,6 @@
 package com.example.blog.api.response;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -9,8 +8,7 @@ import org.springframework.stereotype.Component;
  * Init Response.
  */
 
-@Getter
-@Setter
+@Data
 @Component
 public class InitResponse {
 

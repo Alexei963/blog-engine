@@ -3,15 +3,13 @@ package com.example.blog.api.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.util.Map;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  *  Post response.
  */
 
-@Getter
-@Setter
+@Data
 @JsonInclude(Include.NON_EMPTY)
 public class ResultAndErrorsResponse {
 
