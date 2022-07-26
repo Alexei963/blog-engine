@@ -36,6 +36,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
  * Auth Service.
@@ -163,10 +164,12 @@ public class AuthService {
       String code = UUID.randomUUID().toString();
       user.setCode(code);
       userRepository.save(user);
-      String link = "http://localhost:8080/login/change-password/";
+      String baseUrl = ServletUriComponentsBuilder
+          .fromCurrentContextPath().build().toUriString();
+      String link = baseUrl + "/login/change-password/" + code;
       String passwordRecoveryLink = String.format("Добрый день %s. \n"
-              + "Чтобы изменить пароль перейдите по ссылке: " + link.concat("%s"),
-          user.getName(), user.getCode());
+              + "Чтобы изменить пароль перейдите по ссылке: " + link,
+          user.getName());
       SimpleMailMessage mailMessage = new SimpleMailMessage();
       mailMessage.setFrom(username);
       mailMessage.setTo(restorePasswordRequest.getEmail());

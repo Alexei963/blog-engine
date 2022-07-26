@@ -30,6 +30,9 @@ public class ApiPostController {
 
   private final PostService postService;
 
+  private static final int LIKE_VALUE = 1;
+  private static final int DISLIKE_VALUE = -1;
+
   public ApiPostController(PostService postService) {
     this.postService = postService;
   }
@@ -115,14 +118,14 @@ public class ApiPostController {
   @PostMapping("/like")
   @PreAuthorize("hasAuthority('user:write')")
   public ResponseEntity<ResultResponse> like(@RequestBody PostIdRequest postIdRequest) {
-    return new ResponseEntity<>(postService.getPostVote(postIdRequest, 1),
+    return new ResponseEntity<>(postService.getPostVote(postIdRequest, LIKE_VALUE),
         HttpStatus.OK);
   }
 
   @PostMapping("/dislike")
   @PreAuthorize("hasAuthority('user:write')")
   public ResponseEntity<ResultResponse> dislike(@RequestBody PostIdRequest postIdRequest) {
-    return new ResponseEntity<>(postService.getPostVote(postIdRequest, -1),
+    return new ResponseEntity<>(postService.getPostVote(postIdRequest, DISLIKE_VALUE),
         HttpStatus.OK);
   }
 }
