@@ -39,12 +39,16 @@ public class ImageService {
       File uploadDir = new File(newPath.toString());
       if (!uploadDir.exists()) {
         if (uploadDir.mkdirs()) {
-          String imageName = RandomString.make(5);
+          String imageType = Objects.requireNonNull(
+              image.getOriginalFilename()).split("\\.")[1];
+          String imageName = RandomString.make(5)
+              + "."
+              + imageType;
           uploadedImage = new File(newPath + "/" + imageName);
           BufferedImage oldImage = ImageIO.read(image.getInputStream());
           BufferedImage newImage = Scalr.resize(oldImage,
               Method.ULTRA_QUALITY, Mode.FIT_TO_WIDTH, imageWidth);
-          ImageIO.write(newImage, "jpg", uploadedImage);
+          ImageIO.write(newImage, imageType, uploadedImage);
         }
       }
     }
