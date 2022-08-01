@@ -6,9 +6,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import javax.imageio.ImageIO;
 import net.bytebuddy.utility.RandomString;
+import org.apache.commons.io.FilenameUtils;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Method;
 import org.imgscalr.Scalr.Mode;
@@ -37,19 +37,17 @@ public class ImageService {
           .append("/")
           .append(RandomString.make(2));
       File uploadDir = new File(newPath.toString());
-      if (!uploadDir.exists()) {
-        if (uploadDir.mkdirs()) {
-          String imageType = Objects.requireNonNull(
-              image.getOriginalFilename()).split("\\.")[1];
-          String imageName = RandomString.make(5)
-              + "."
-              + imageType;
-          uploadedImage = new File(newPath + "/" + imageName);
-          BufferedImage oldImage = ImageIO.read(image.getInputStream());
-          BufferedImage newImage = Scalr.resize(oldImage,
-              Method.ULTRA_QUALITY, Mode.FIT_TO_WIDTH, imageWidth);
-          ImageIO.write(newImage, imageType, uploadedImage);
-        }
+      if (!uploadDir.exists() && uploadDir.mkdirs()) {
+        String extension = FilenameUtils.getExtension(image.getOriginalFilename());
+        String imageName = RandomString.make(5)
+            + "."
+            + extension;
+        uploadedImage = new File(newPath + "/" + imageName);
+        BufferedImage oldImage = ImageIO.read(image.getInputStream());
+        BufferedImage newImage = Scalr.resize(oldImage,
+            Method.ULTRA_QUALITY, Mode.FIT_TO_WIDTH, imageWidth);
+        assert extension != null;
+        ImageIO.write(newImage, extension, uploadedImage);
       }
     }
     assert uploadedImage != null;
@@ -58,17 +56,16 @@ public class ImageService {
 
   public ResultAndErrorsResponse imageUploadErrors(MultipartFile image) {
     Map<String, String> errors = new HashMap<>();
-    ResultAndErrorsResponse postResponse = new ResultAndErrorsResponse();
-    if (image != null) {
-      if (image.getSize() > MAX_IMAGE_SIZE) {
-        errors.put("image size", "Размер файла превышает допустимый размер");
-      }
-      if (!(Objects.requireNonNull(image.getOriginalFilename()).endsWith(".jpg"))
-          && !(image.getOriginalFilename().endsWith(".png"))) {
-        errors.put("image format", "Неверный формат изображения");
-      }
+    String extension = FilenameUtils.getExtension(image.getOriginalFilename());
+    if (image.getSize() > MAX_IMAGE_SIZE) {
+      errors.put("image size", "Размер файла превышает допустимый размер");
     }
-    postResponse.setErrors(errors);
-    return postResponse;
+    assert extension != null;
+    if (!extension.equals("jpg") && !extension.equals("png")) {
+      errors.put("image format", "Неверный формат изображения");
+    }
+    ResultAndErrorsResponse resultAndErrorsResponse = new ResultAndErrorsResponse();
+    resultAndErrorsResponse.setErrors(errors);
+    return resultAndErrorsResponse;
   }
 }

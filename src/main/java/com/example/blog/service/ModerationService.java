@@ -7,6 +7,8 @@ import com.example.blog.model.Post;
 import com.example.blog.model.User;
 import com.example.blog.repository.PostRepository;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -15,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ModerationService {
+
+  static final Logger logger = LoggerFactory.getLogger(ModerationService.class);
 
   private final PostRepository postRepository;
   private final UserService userService;
@@ -38,10 +42,12 @@ public class ModerationService {
       if (moderationRequest.getDecision().equals("accept")) {
         post.setModerationStatus(ModerationStatus.ACCEPTED);
         post.setModeratorId(user.getId());
+        logger.info("Модератор {} одобрил пост {}", user.getName(), post.getId());
       }
       if (moderationRequest.getDecision().equals("decline")) {
         post.setModerationStatus(ModerationStatus.DECLINED);
         post.setModeratorId(user.getId());
+        logger.info("Модератор {} отклонил пост {}", user.getName(), post.getId());
       }
       postRepository.save(post);
       result.setResult(true);

@@ -14,6 +14,7 @@ spring.mail.password: dsvwgjybpmsyrftm
 spring.mail.properties.mail.smtp.auth: true
 spring.mail.properties.mail.smtp.starttls.enable: true
 spring.mvc.pathmatch.matching-strategy: ant_path_matcher
+logging.file.name: logs/mylog.log
 
 blog.title: DevPub
 blog.subtitle: Рассказы разработчиков
