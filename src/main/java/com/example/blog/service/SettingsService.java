@@ -34,27 +34,18 @@ public class SettingsService {
     Iterable<GlobalSettings> settings = settingsRepository.findAll();
     settings.forEach(s -> {
       if (s.getCode().equals("MULTIUSER_MODE")) {
-        if (settingsRequest.isMultiUserMode()) {
-          s.setValue("YES");
-        } else {
-          s.setValue("NO");
-        }
+        String settingsValue = settingsRequest.isMultiUserMode() ? "YES" : "NO";
+        s.setValue(settingsValue);
         settingsRepository.save(s);
       }
       if (s.getCode().equals("POST_PREMODERATION")) {
-        if (settingsRequest.isPostPreModeration()) {
-          s.setValue("YES");
-        } else {
-          s.setValue("NO");
-        }
+        String settingsValue = settingsRequest.isPostPreModeration() ? "YES" : "NO";
+        s.setValue(settingsValue);
         settingsRepository.save(s);
       }
       if (s.getCode().equals("STATISTICS_IS_PUBLIC")) {
-        if (settingsRequest.isStatisticsIsPublic()) {
-          s.setValue("YES");
-        } else {
-          s.setValue("NO");
-        }
+        String settingsValue = settingsRequest.isStatisticsIsPublic() ? "YES" : "NO";
+        s.setValue(settingsValue);
         settingsRepository.save(s);
       }
     });

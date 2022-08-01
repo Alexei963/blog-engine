@@ -192,7 +192,7 @@ public class ApiGeneralController {
 
   @PutMapping("/settings")
   @PreAuthorize("hasAuthority('user:moderate')")
-  public ResponseEntity<?> saveSettings(@RequestBody SettingsRequest settingsRequest) {
+  public ResponseEntity<String> saveSettings(@RequestBody SettingsRequest settingsRequest) {
     settingsService.saveSettings(settingsRequest);
     return new ResponseEntity<>("", HttpStatus.OK);
   }

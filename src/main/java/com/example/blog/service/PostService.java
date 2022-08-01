@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +37,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PostService {
+
+  static final Logger logger = LoggerFactory.getLogger(PostService.class);
 
   private final PostRepository postRepository;
   private final MapperService mapperService;
@@ -111,11 +115,9 @@ public class PostService {
     PostByIdResponse postResponse = new PostByIdResponse();
     Optional<Post> optionalPost = postRepository.findById(id);
     User user = userService.getLoggedUser();
-    if (user != null) {
-      if (user.getIsModerator() != 1 && optionalPost.isPresent()
-          && !user.equals(optionalPost.get().getUser())) {
-        postViewIncrease(optionalPost.get());
-      }
+    if (user != null && user.getIsModerator() != 1 && optionalPost.isPresent()
+        && !user.equals(optionalPost.get().getUser())) {
+      postViewIncrease(optionalPost.get());
     }
     if (user == null && optionalPost.isPresent()) {
       postViewIncrease(optionalPost.get());
@@ -183,6 +185,7 @@ public class PostService {
     if (user != null) {
       Post post = new Post();
       addOrEditPost(postResponse, postRequest, user, post, ModerationStatus.NEW);
+      logger.info("Пользователь {} добавил новый пост", user.getName());
     }
     return postResponse;
   }
@@ -193,10 +196,12 @@ public class PostService {
     User user = userService.getLoggedUser();
     if (optionalPost.isPresent() && user != null) {
       Post post = optionalPost.get();
-      if (user.getIsModerator()  == 1) {
+      if (user.getIsModerator() == 1) {
         addOrEditPost(postResponse, postRequest, post.getUser(), post, post.getModerationStatus());
+        logger.info("Модератор {} отредактировал пост {}", user.getName(), post.getId());
       } else {
         addOrEditPost(postResponse, postRequest, post.getUser(), post, ModerationStatus.NEW);
+        logger.info("Пользователь {} изменил пост {}", user.getName(), post.getId());
       }
     }
     return postResponse;
@@ -265,6 +270,8 @@ public class PostService {
           postVote.setValue(postVoteValue);
           postVoteRepository.save(postVote);
           response.setResult(true);
+          logger.info("Пользователь {} изменил like/dislike под постом {}.",
+              user.getName(), post.getId());
         }
       } else {
         PostVote postVote = new PostVote();
@@ -274,6 +281,8 @@ public class PostService {
         postVote.setValue(postVoteValue);
         postVoteRepository.save(postVote);
         response.setResult(true);
+        logger.info("Пользователь {} поставил like/dislike под постом {}.",
+            user.getName(), post.getId());
       }
     }
     return response;

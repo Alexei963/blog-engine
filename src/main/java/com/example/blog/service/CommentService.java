@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -24,6 +26,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CommentService {
+
+  static final Logger logger = LoggerFactory.getLogger(CommentService.class);
 
   private final CommentRepository commentRepository;
   private final PostRepository postRepository;
@@ -59,6 +63,8 @@ public class CommentService {
     CommentResponse commentResponse = new CommentResponse();
     CommentDto commentDto = mapperService.convertCommentToDto(comment);
     commentResponse.setId(commentDto.getId());
+    assert post != null;
+    logger.info("Пользователь {} оставил комментарий по постом {}.", user.getName(), post.getId());
     return commentResponse;
   }
 

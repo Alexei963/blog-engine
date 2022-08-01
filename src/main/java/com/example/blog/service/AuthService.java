@@ -24,6 +24,8 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -33,7 +35,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -46,12 +47,15 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 @EnableScheduling
 public class AuthService {
 
+  static final Logger logger = LoggerFactory.getLogger(AuthService.class);
+
   private final CaptchaRepository captchaRepository;
   private final UserRepository userRepository;
   private final MapperService mapperService;
   private final AuthenticationManager authenticationManager;
   private final PasswordEncoder passwordEncoder;
   private final JavaMailSender mailSender;
+  private final UserService userService;
 
   @Value("{spring.mail.username}")
   private String username;
@@ -60,13 +64,15 @@ public class AuthService {
   public AuthService(CaptchaRepository captchaRepository,
       UserRepository userRepository, MapperService mapperService,
       AuthenticationManager authenticationManager,
-      PasswordEncoder passwordEncoder, JavaMailSender mailSender) {
+      PasswordEncoder passwordEncoder, JavaMailSender mailSender,
+      UserService userService) {
     this.captchaRepository = captchaRepository;
     this.userRepository = userRepository;
     this.mapperService = mapperService;
     this.authenticationManager = authenticationManager;
     this.passwordEncoder = passwordEncoder;
     this.mailSender = mailSender;
+    this.userService = userService;
   }
 
   public CaptchaResponse getCaptchaResponse() throws IOException {
@@ -107,6 +113,7 @@ public class AuthService {
       user.setEmail(registerRequest.getEmail());
       user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
       userRepository.save(user);
+      logger.info("Зарегистрировался новый пользователь {}", user.getName());
       registerResponse.setResult(true);
     }
     if (userEmail) {
@@ -130,32 +137,44 @@ public class AuthService {
     captchaRepository.deleteAll();
   }
 
-  public LoginResponse getLoginResponse(String email) {
-    com.example.blog.model.User currentUser = userRepository.findByEmail(email)
-        .orElseThrow(() -> new UsernameNotFoundException(email));
-    UserDto userDto = mapperService.convertUserToDto(currentUser);
+  public LoginResponse getCheckResponse() {
+    User user = userService.getLoggedUser();
+    return getLoginResponse(user);
+  }
+
+  public LoginResponse login(String email, String password) {
+    Optional<User> optionalUser = userRepository.findByEmail(email);
+    if (optionalUser.isPresent()) {
+      User currentUser = optionalUser.get();
+      Authentication auth = authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(email, password));
+      SecurityContextHolder.getContext().setAuthentication(auth);
+      logger.info("Пользователь {} авторизовался.", currentUser.getName());
+      return getLoginResponse(currentUser);
+    }
+    return new LoginResponse();
+  }
+
+  private LoginResponse getLoginResponse(User user) {
     LoginResponse loginResponse = new LoginResponse();
-    loginResponse.setResult(true);
-    loginResponse.setUserDto(userDto);
+    if (user != null) {
+      UserDto userDto = mapperService.convertUserToDto(user);
+      loginResponse.setResult(true);
+      loginResponse.setUserDto(userDto);
+    }
     return loginResponse;
   }
 
-  public Authentication getAuthentication(String email, String password) {
-    Authentication auth = authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(email, password));
-    SecurityContextHolder.getContext().setAuthentication(auth);
-    return auth;
-  }
-
-  public LoginResponse getLogout() {
+  public LoginResponse logout() {
     LoginResponse loginResponse = new LoginResponse();
     loginResponse.setResult(true);
+    logger.info("Пользователь {} вышел.", userService.getLoggedUser().getName());
     SecurityContextHolder.getContext().setAuthentication(null);
     SecurityContextHolder.clearContext();
     return loginResponse;
   }
 
-  public ResultResponse send(RestorePasswordRequest restorePasswordRequest) {
+  public ResultResponse sendPasswordChangeLink(RestorePasswordRequest restorePasswordRequest) {
     ResultResponse response = new ResultResponse();
     Optional<User> optionalUser = userRepository.findByEmail(restorePasswordRequest.getEmail());
     User user;
@@ -168,8 +187,8 @@ public class AuthService {
           .fromCurrentContextPath().build().toUriString();
       String link = baseUrl + "/login/change-password/" + code;
       String passwordRecoveryLink = String.format("Добрый день %s. \n"
-              + "Чтобы изменить пароль перейдите по ссылке: " + link,
-          user.getName());
+              + "Чтобы изменить пароль перейдите по ссылке: %s",
+          user.getName(), link);
       SimpleMailMessage mailMessage = new SimpleMailMessage();
       mailMessage.setFrom(username);
       mailMessage.setTo(restorePasswordRequest.getEmail());
@@ -196,6 +215,7 @@ public class AuthService {
       assert user != null;
       user.setPassword(passwordEncoder.encode(changePasswordRequest.getPassword()));
       userRepository.save(user);
+      logger.info("Пользователь {} изменил пароль.", user.getName());
       response.setResult(true);
     }
     if (passwordLength < 6) {
