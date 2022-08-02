@@ -82,7 +82,8 @@ public class CommentService {
         .stream(postRepository.findAll().spliterator(), false)
         .map(Post::getId)
         .collect(Collectors.toList());
-    if (!listParentIdComments.contains(commentRequest.getParentId())
+    if (commentRequest.getParentId() != 0
+        && !listParentIdComments.contains(commentRequest.getParentId())
         && !listIdComments.contains(commentRequest.getParentId())) {
       errors.put("parent_id", "Такого комментария не существует");
     }
