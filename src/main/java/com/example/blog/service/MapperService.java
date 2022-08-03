@@ -11,6 +11,7 @@ import com.example.blog.model.User;
 import com.example.blog.repository.PostRepository;
 import java.util.ArrayList;
 import java.util.List;
+import org.jsoup.Jsoup;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -41,7 +42,7 @@ public class MapperService {
     postDto.setUserDto(convertUserToDto(post.getUser()));
     String announce = post.getText();
     if (announce.length() > 150) {
-      announce = announce.substring(0, 150).concat("...");
+      announce = Jsoup.parse(announce).text().substring(0, 150).concat("...");
     }
     postDto.setAnnounce(announce);
     long likesCount = post.getVotes().stream()
