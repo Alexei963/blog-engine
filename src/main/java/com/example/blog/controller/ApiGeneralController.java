@@ -60,9 +60,6 @@ public class ApiGeneralController {
   @Value("${upload.path}")
   private String uploadPath;
 
-  @Value("${userPhotos.path}")
-  private String userPhotoPath;
-
   public ApiGeneralController(InitResponse initResponse,
       SettingsService settingsService, TagService tagService,
       CalendarService calendarService, ImageService imageService,
@@ -151,7 +148,7 @@ public class ApiGeneralController {
           HttpStatus.BAD_REQUEST);
     } else {
       return new ResponseEntity<>(profileEditingService.profileAndPhotoEditing(
-          photo, name, email, password, userPhotoPath), HttpStatus.OK);
+          photo, name, email, password, uploadPath), HttpStatus.OK);
     }
   }
 

@@ -17,7 +17,7 @@ spring.mail.properties.mail.smtp.starttls.enable: true
 spring.mvc.pathmatch.matching-strategy: ant_path_matcher
 logging.file.name: logs/mylog.log
 server.port: ${PORT:8080}
-spring.datasource.hikari.max-lifetime: 300000
+spring.datasource.hikari.max-lifetime: 30000
 
 blog.title: DevPub
 blog.subtitle: Рассказы разработчиков
@@ -27,5 +27,4 @@ blog.copyright: Дмитрий Сергеев
 blog.copyrightFrom: 2020
 
 upload.path: /upload
-userPhotos.path: /users photos
 
