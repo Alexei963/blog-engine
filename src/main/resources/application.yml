@@ -26,5 +26,5 @@ blog.email: dmitry-mail@gmail.com
 blog.copyright: Дмитрий Сергеев
 blog.copyrightFrom: 2020
 
-upload.path: /upload
+upload.path: upload
 
