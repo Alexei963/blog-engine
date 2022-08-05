@@ -51,7 +51,7 @@ public class ImageService {
       }
     }
     assert uploadedImage != null;
-    return uploadedImage.getPath();
+    return "\\" + uploadedImage.getPath();
   }
 
   public ResultAndErrorsResponse imageUploadErrors(MultipartFile image) {
