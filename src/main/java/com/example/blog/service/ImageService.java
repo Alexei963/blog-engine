@@ -27,31 +27,32 @@ public class ImageService {
   public String getImagePath(MultipartFile image, String path, int imageWidth) throws IOException {
     File uploadedImage = null;
     StringBuilder newPath = new StringBuilder();
+    String separator = File.separator;
     if (image != null) {
       newPath
           .append(path)
-          .append("/")
+          .append(separator)
           .append(RandomString.make(2))
-          .append("/")
+          .append(separator)
           .append(RandomString.make(2))
-          .append("/")
+          .append(separator)
           .append(RandomString.make(2));
       File uploadDir = new File(newPath.toString());
       if (!uploadDir.exists() && uploadDir.mkdirs()) {
         String extension = FilenameUtils.getExtension(image.getOriginalFilename());
+        assert extension != null;
         String imageName = RandomString.make(5)
-            + "."
-            + extension;
-        uploadedImage = new File(newPath + "/" + imageName);
+            .concat(".")
+            .concat(extension);
+        uploadedImage = new File(newPath + separator + imageName);
         BufferedImage oldImage = ImageIO.read(image.getInputStream());
         BufferedImage newImage = Scalr.resize(oldImage,
             Method.ULTRA_QUALITY, Mode.FIT_TO_WIDTH, imageWidth);
-        assert extension != null;
         ImageIO.write(newImage, extension, uploadedImage);
       }
     }
     assert uploadedImage != null;
-    return "\\" + uploadedImage.getPath();
+    return separator.concat(uploadedImage.getPath());
   }
 
   public ResultAndErrorsResponse imageUploadErrors(MultipartFile image) {
