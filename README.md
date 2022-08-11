@@ -15,6 +15,7 @@
 - Под постом можно поставить лайк, дизлайк или комментарий;
 
 ![](https://github.com/Alexei963/blog-engine/blob/master/images/post.png?raw=true)
+
 ![](https://github.com/Alexei963/blog-engine/blob/master/images/comments.png?raw=true)
 
 - Можно увидеть количество просмотров поста;
