@@ -4,40 +4,40 @@
 
 Приложение выглядит так:
 
-![](D:\projects\diploma\BlogEngine\images\main page.png)
+![](https://github.com/Alexei963/blog-engine/blob/master/images/main%20page.png?raw=true)
 
 В приложении реализовано:
 
 - Регистрация пользователей;
 
-![](D:\projects\diploma\BlogEngine\images\registration.png)
+![](https://github.com/Alexei963/blog-engine/blob/master/images/registration.png?raw=true)
 
 - Под постом можно поставить лайк, дизлайк или комментарий;
 
-![](D:\projects\diploma\BlogEngine\images\post.png)
-![](D:\projects\diploma\BlogEngine\images\comments.png)
+![](https://github.com/Alexei963/blog-engine/blob/master/images/post.png?raw=true)
+![](https://github.com/Alexei963/blog-engine/blob/master/images/comments.png?raw=true)
 
 - Можно увидеть количество просмотров поста;
 - В профиле пользователь может изменить свои данные (фото, ФИО, email, пароль);
 
-![](D:\projects\diploma\BlogEngine\images\my profile.png)
+![](https://github.com/Alexei963/blog-engine/blob/master/images/my%20profile.png?raw=true)
 
 - К своему посту пользователь может добавить тег, и по этому тегу можно увидеть посты на эту тематику;
 - Если пользователь является модератором – он может утверждать, отклонять, редактировать новый посты;
 
-![](D:\projects\diploma\BlogEngine\images\moderation.png)
+![](https://github.com/Alexei963/blog-engine/blob/master/images/moderation.png?raw=true)
 
 - Так же модератор может изменять настройки приложения;
 
-![](D:\projects\diploma\BlogEngine\images\settings.png)
+![](https://github.com/Alexei963/blog-engine/blob/master/images/settings.png?raw=true)
 
 - Если пользователь забыл пароль для входа, он может его восстановить.
 
-![](D:\projects\diploma\BlogEngine\images\password recovery.png)
+![](https://github.com/Alexei963/blog-engine/blob/master/images/password%20recovery.png?raw=true)
 
 - На email указанный при регистрации придет ссылка на восстановление пароля. Когда пользователь перейдет по ссылке он попадет на форму восстановления пароля;
 
-![](D:\projects\diploma\BlogEngine\images\password change.png)
+![](https://github.com/Alexei963/blog-engine/blob/master/images/password%20change.png?raw=true)
 
 # Cтек используемых технологий.
 
