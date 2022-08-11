@@ -7,6 +7,7 @@ import com.example.blog.repository.TagRepository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
@@ -31,13 +32,16 @@ public class TagService {
     ArrayList<Tag> tags = new ArrayList<>(tagRepository.findAll());
     if (query == null) {
       List<TagDto> tagDtoList = tags.stream()
-            .map(mapperService::convertTagToDto)
-            .collect(Collectors.toList());
+          .map(mapperService::convertTagToDto)
+          .collect(Collectors.toList());
       tagResponse.setTags(tagDtoList);
       return tagResponse;
     } else {
-      Tag tag = tagRepository.findByName(query);
-      tagResponse.setTags(Collections.singletonList(mapperService.convertTagToDto(tag)));
+      Optional<Tag> tagOptional = tagRepository.findByName(query);
+      if (tagOptional.isPresent()) {
+        Tag tag = tagOptional.get();
+        tagResponse.setTags(Collections.singletonList(mapperService.convertTagToDto(tag)));
+      }
     }
     return tagResponse;
   }

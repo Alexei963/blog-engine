@@ -14,8 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -70,24 +68,16 @@ public class CommentService {
 
   public ResultAndErrorsResponse commentAddingErrors(CommentRequest commentRequest) {
     Map<String, String> errors = new HashMap<>();
-    List<Integer> listIdComments = StreamSupport
-        .stream(commentRepository.findAll().spliterator(), false)
-        .map(PostComment::getId)
-        .collect(Collectors.toList());
-    List<Integer> listParentIdComments = StreamSupport
-        .stream(commentRepository.findAll().spliterator(), false)
-        .map(PostComment::getParentId)
-        .collect(Collectors.toList());
-    List<Integer> listIdPosts = StreamSupport
-        .stream(postRepository.findAll().spliterator(), false)
-        .map(Post::getId)
-        .collect(Collectors.toList());
-    if (commentRequest.getParentId() != 0
-        && !listParentIdComments.contains(commentRequest.getParentId())
-        && !listIdComments.contains(commentRequest.getParentId())) {
+    Optional<PostComment> postCommentById = commentRepository
+        .findById(commentRequest.getParentId());
+    List<PostComment> postCommentByParentId = commentRepository
+        .findByParentId(commentRequest.getParentId());
+    Optional<Post> postById = postRepository
+        .findById(commentRequest.getPostId());
+    if (postCommentByParentId.isEmpty() && postCommentById.isEmpty()) {
       errors.put("parent_id", "Такого комментария не существует");
     }
-    if (!listIdPosts.contains(commentRequest.getPostId())) {
+    if (postById.isEmpty()) {
       errors.put("post_id", "Такого поста не существует");
     }
     if (commentRequest.getText() == null || commentRequest.getText().length() < 10) {

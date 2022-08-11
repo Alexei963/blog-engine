@@ -212,16 +212,15 @@ public class PostService {
     Map<String, String> errorsMap = new LinkedHashMap<>();
     Set<Tag> tags = new HashSet<>();
     postRequest.getTags().forEach(t -> {
-      if (!tagRepository.findAll().stream()
-          .map(Tag::getName)
-          .collect(Collectors.toList())
-          .contains(t)) {
+      Optional<Tag> optionalTag = tagRepository.findByName(t);
+      if (optionalTag.isEmpty()) {
         Tag tag = new Tag();
         tag.setName(t);
         tagRepository.save(tag);
+      } else {
+        Tag tag = optionalTag.get();
+        tags.add(tag);
       }
-      Tag tag = tagRepository.findByName(t);
-      tags.add(tag);
     });
     if (postRequest.getTitle().length() > 3
         && postRequest.getText().length() > 50) {
