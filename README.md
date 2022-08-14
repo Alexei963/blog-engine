@@ -4,44 +4,42 @@
 
 Приложение выглядит так:
 
-![](D:\projects\diploma\BlogEngine\images\main page.png)
+![](https://github.com/Alexei963/blog-engine/blob/master/images/main%20page.png?raw=true)
 
 В приложении реализовано:
 
 - Регистрация пользователей;
-
-![](D:\projects\diploma\BlogEngine\images\registration.png)
-
 - Под постом можно поставить лайк, дизлайк или комментарий;
-
-![](D:\projects\diploma\BlogEngine\images\post.png)
-![](D:\projects\diploma\BlogEngine\images\comments.png)
-
 - Можно увидеть количество просмотров поста;
 - В профиле пользователь может изменить свои данные (фото, ФИО, email, пароль);
-
-![](D:\projects\diploma\BlogEngine\images\my profile.png)
-
 - К своему посту пользователь может добавить тег, и по этому тегу можно увидеть посты на эту тематику;
 - Если пользователь является модератором – он может утверждать, отклонять, редактировать новый посты;
-
-![](D:\projects\diploma\BlogEngine\images\moderation.png)
-
 - Так же модератор может изменять настройки приложения;
-
-![](D:\projects\diploma\BlogEngine\images\settings.png)
-
 - Если пользователь забыл пароль для входа, он может его восстановить.
-
-![](D:\projects\diploma\BlogEngine\images\password recovery.png)
-
 - На email указанный при регистрации придет ссылка на восстановление пароля. Когда пользователь перейдет по ссылке он попадет на форму восстановления пароля;
-
-![](D:\projects\diploma\BlogEngine\images\password change.png)
 
 # Cтек используемых технологий.
 
-Проект реализован на фреймворке SpringBoot. Авторизация реализована с помощью SpringSecurity. В качестве базы данных использовал MySQL.
+Основной стек используемых технологий:
+
+ - Java 11
+ - Apache Maven
+ - Spring Boot FrameWork
+ - Spring Security
+ - Spring Data
+ - MySQL 8
+ - Hibernate
+ - MockMvc
+
+Дополнительные инструменты, используемые в проекте:
+
+ - Cage (Captcha Generator)
+ - Spring Mail
+ - Jsoup (HTML Parser)
+ - Imgscalr (Java Image Scaling Library)
+ - Lombok
+ - Log4j2
+ - Jackson
 
 # Запуск приложения.
 

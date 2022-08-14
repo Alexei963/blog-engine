@@ -213,14 +213,15 @@ public class PostService {
     Set<Tag> tags = new HashSet<>();
     postRequest.getTags().forEach(t -> {
       Optional<Tag> optionalTag = tagRepository.findByName(t);
+      Tag tag;
       if (optionalTag.isEmpty()) {
-        Tag tag = new Tag();
+        tag = new Tag();
         tag.setName(t);
         tagRepository.save(tag);
       } else {
-        Tag tag = optionalTag.get();
-        tags.add(tag);
+        tag = optionalTag.get();
       }
+      tags.add(tag);
     });
     if (postRequest.getTitle().length() > 3
         && postRequest.getText().length() > 50) {
