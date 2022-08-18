@@ -47,7 +47,7 @@ public class ImageService {
         uploadedImage = new File(newPath + separator + imageName);
         BufferedImage oldImage = ImageIO.read(image.getInputStream());
         BufferedImage newImage = Scalr.resize(oldImage,
-            Method.ULTRA_QUALITY, Mode.FIT_TO_WIDTH, imageWidth);
+            Method.AUTOMATIC, Mode.AUTOMATIC, imageWidth);
         ImageIO.write(newImage, extension, uploadedImage);
       }
     }
