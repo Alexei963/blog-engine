@@ -181,7 +181,8 @@ public class ApiGeneralController {
   @GetMapping("/statistics/all")
   public ResponseEntity<StatisticsResponse> allStatistics() {
     User user = userService.getLoggedUser();
-    if (user != null && user.getIsModerator() != 1) {
+    if (settingsService.statisticsIsPublicSetting()
+        && user != null && user.getIsModerator() != 1) {
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
     return new ResponseEntity<>(statisticsService.getAllStatistics(), HttpStatus.OK);

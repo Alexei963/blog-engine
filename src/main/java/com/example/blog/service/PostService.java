@@ -12,6 +12,7 @@ import com.example.blog.model.Post;
 import com.example.blog.model.PostVote;
 import com.example.blog.model.Tag;
 import com.example.blog.model.User;
+import com.example.blog.repository.GlobalSettingsRepository;
 import com.example.blog.repository.PostRepository;
 import com.example.blog.repository.PostVoteRepository;
 import com.example.blog.repository.TagRepository;
@@ -45,15 +46,18 @@ public class PostService {
   private final TagRepository tagRepository;
   private final UserService userService;
   private final PostVoteRepository postVoteRepository;
+  private final GlobalSettingsRepository settingsRepository;
 
   public PostService(PostRepository postRepository, MapperService mapperService,
       TagRepository tagRepository, UserService userService,
-      PostVoteRepository postVoteRepository) {
+      PostVoteRepository postVoteRepository,
+      GlobalSettingsRepository settingsRepository) {
     this.postRepository = postRepository;
     this.mapperService = mapperService;
     this.tagRepository = tagRepository;
     this.userService = userService;
     this.postVoteRepository = postVoteRepository;
+    this.settingsRepository = settingsRepository;
   }
 
   private PostListResponse getResponse(Page<Post> page) {
@@ -184,7 +188,11 @@ public class PostService {
     User user = userService.getLoggedUser();
     if (user != null) {
       Post post = new Post();
-      addOrEditPost(postResponse, postRequest, user, post, ModerationStatus.NEW);
+      if (postPreModerationSetting()) {
+        addOrEditPost(postResponse, postRequest, user, post, ModerationStatus.NEW);
+      } else {
+        addOrEditPost(postResponse, postRequest, user, post, ModerationStatus.ACCEPTED);
+      }
       logger.info("Пользователь {} добавил новый пост", user.getName());
     }
     return postResponse;
@@ -199,8 +207,12 @@ public class PostService {
       if (user.getIsModerator() == 1) {
         addOrEditPost(postResponse, postRequest, post.getUser(), post, post.getModerationStatus());
         logger.info("Модератор {} отредактировал пост {}", user.getName(), post.getId());
-      } else {
+      }
+      if (postPreModerationSetting()) {
         addOrEditPost(postResponse, postRequest, post.getUser(), post, ModerationStatus.NEW);
+        logger.info("Пользователь {} изменил пост {}", user.getName(), post.getId());
+      } else {
+        addOrEditPost(postResponse, postRequest, post.getUser(), post, ModerationStatus.ACCEPTED);
         logger.info("Пользователь {} изменил пост {}", user.getName(), post.getId());
       }
     }
@@ -247,6 +259,11 @@ public class PostService {
       errorsMap.put("text", "Текст публикации слишком короткий");
     }
     postResponse.setErrors(errorsMap);
+  }
+
+  private boolean postPreModerationSetting() {
+    return settingsRepository.findGlobalSettingsByCode("POST_PREMODERATION")
+        .getValue().equals("YES");
   }
 
   public ResultResponse getPostVote(PostIdRequest postIdRequest, int postVoteValue) {
